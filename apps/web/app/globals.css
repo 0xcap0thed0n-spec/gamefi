@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-void-950 text-zinc-100 antialiased font-body;
+  min-height: 100vh;
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-neon-cyan px-5 py-3 text-sm font-semibold text-void-950 transition hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neon-cyan disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-semibold text-zinc-100 backdrop-blur transition hover:border-neon-cyan/40 hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neon-cyan;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-zinc-300 transition hover:bg-white/5 hover:text-white;
+  }
+
+  .panel {
+    @apply rounded-2xl border border-white/10 bg-void-800/70 backdrop-blur-md shadow-glow;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-full border border-neon-magenta/30 bg-neon-magenta/10 px-3 py-1 text-xs font-medium uppercase tracking-wider text-neon-magenta;
+  }
+}
