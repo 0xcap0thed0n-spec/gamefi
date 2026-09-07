@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { site } from "@/content/site";
 import { MuteToggle, useAudio } from "./AudioProvider";
 
@@ -19,13 +18,12 @@ export function Hero() {
         </div>
 
         <div className="mb-6 flex flex-col items-center sm:mb-8">
-          <Image
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src={site.assets.logo}
             alt={`${site.name} logo`}
-            width={480}
-            height={480}
-            priority
-            className="neon-logo h-auto w-56 object-contain sm:w-72 md:w-80 lg:w-[22rem]"
+            className="neon-logo h-auto w-56 bg-transparent object-contain sm:w-72 md:w-80 lg:w-[22rem]"
+            style={{ backgroundColor: "transparent" }}
           />
         </div>
 

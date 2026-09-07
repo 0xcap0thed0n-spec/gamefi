@@ -147,9 +147,10 @@ body {
 
 /* —— Local asset utilities —— */
 .neon-logo {
-  background: transparent;
-  box-shadow: 0 0 36px rgba(255, 45, 149, 0.35), 0 0 64px rgba(0, 245, 255, 0.2);
-  filter: drop-shadow(0 0 18px rgba(255, 45, 149, 0.45)) drop-shadow(0 0 28px rgba(0, 245, 255, 0.25));
+  background: transparent !important;
+  box-shadow: none !important;
+  /* drop-shadow follows PNG alpha — box-shadow painted a fake rectangular slab */
+  filter: drop-shadow(0 0 14px rgba(255, 45, 149, 0.55)) drop-shadow(0 0 28px rgba(0, 245, 255, 0.3));
 }
 
 .neon-panel-frame {
