@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Orbitron, Press_Start_2P, Inter } from "next/font/google";
 import { AudioProvider } from "@/components/AudioProvider";
 import { ScanlineOverlay } from "@/components/ScanlineOverlay";
+import { FixedBackground } from "@/components/FixedBackground";
 import { Footer } from "@/components/Footer";
 import { site } from "@/content/site";
 import "./globals.css";
@@ -37,8 +38,9 @@ export default function RootLayout(props: { children: React.ReactNode }) {
       lang="en"
       className={`${display.variable} ${pixel.variable} ${body.variable}`}
     >
-      <body className="flex min-h-screen flex-col">
+      <body className="flex min-h-screen flex-col bg-transparent">
         <AudioProvider>
+          <FixedBackground />
           <ScanlineOverlay />
           <main className="relative z-10 flex-1">{props.children}</main>
           <Footer />

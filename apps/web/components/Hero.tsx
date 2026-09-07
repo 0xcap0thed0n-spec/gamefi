@@ -22,10 +22,10 @@ export function Hero() {
           <Image
             src={site.assets.logo}
             alt={`${site.name} logo`}
-            width={320}
-            height={320}
+            width={480}
+            height={480}
             priority
-            className="neon-logo h-44 w-44 rounded-2xl object-cover sm:h-56 sm:w-56 md:h-64 md:w-64 lg:h-72 lg:w-72"
+            className="neon-logo h-auto w-56 rounded-xl object-contain sm:w-72 md:w-80 lg:w-[22rem]"
           />
         </div>
 

@@ -13,8 +13,8 @@ html {
 body {
   @apply bg-void-950 text-zinc-100 antialiased font-body;
   min-height: 100vh;
-  background-image: theme("backgroundImage.hero-radial");
-  background-attachment: fixed;
+  background-color: #05040a;
+  background-image: none;
 }
 
 /* —— CRT / VHS overlays —— */
@@ -72,11 +72,12 @@ body {
   background-image: theme("backgroundImage.grid-fade");
   background-size: 56px 56px;
   mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, black, transparent);
-  opacity: 0.55;
+  opacity: 0.18;
 }
 
 .hero-glow {
   background-image: theme("backgroundImage.hero-radial");
+  opacity: 0.28;
 }
 
 .perspective-road {
@@ -185,7 +186,7 @@ body {
   }
 
   .neon-card {
-    @apply rounded-2xl border border-neon-cyan/25 bg-void-900/75 shadow-glow backdrop-blur-md;
+    @apply rounded-2xl border border-neon-cyan/25 bg-void-900/85 shadow-glow backdrop-blur-md;
     box-shadow:
       0 0 0 1px rgba(0, 245, 255, 0.08),
       0 0 40px rgba(0, 245, 255, 0.1),

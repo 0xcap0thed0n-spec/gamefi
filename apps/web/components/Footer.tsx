@@ -8,7 +8,7 @@ export function Footer() {
   const { playClick, playHover } = useAudio();
 
   return (
-    <footer className="mt-auto border-t border-white/10 bg-void-950/90">
+    <footer className="relative z-10 mt-auto border-t border-white/10 bg-void-950/90">
       <div className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-10 sm:flex-row sm:items-start sm:justify-between sm:px-6">
         <div>
           <p className="font-display text-sm font-semibold uppercase tracking-[0.2em] text-white">
