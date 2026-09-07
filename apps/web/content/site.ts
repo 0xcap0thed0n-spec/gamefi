@@ -21,19 +21,13 @@ export const site = {
   lore: {
     id: "lore",
     eyebrow: "TRANSMISSION // LORE",
-    title: "The city never sleeps. It only flickers.",
-    /**
-     * PLACEHOLDER — replace with final lore copy when ready.
-     * Keep the marker comments so the swap is obvious.
-     */
+    title: "Nightfall City",
     body: [
-      /* === LORE PLACEHOLDER START === */
-      "After midnight the grid bleeds pink and cyan. Somewhere under the wet asphalt, a pirate radio still broadcasts coordinates only certain wallets can decode.",
-      "Nightfall City is that broadcast made flesh — a retro cyberpunk NFT drop wrapped in Hotline Miami heat and synthwave dread. Collectors don't just mint. They tune in.",
-      "Exact story beats, faction names, and drop mechanics are still under blackout. This paragraph is temporary filler — swap it when the real lore lands.",
-      /* === LORE PLACEHOLDER END === */
+      "The city never left the 80s.",
+      "Neon still bleeds across wet streets. The radio still spits static and coded jobs. When the frequency opens, freelancers answer.",
+      "No names. No loyalties. Just the contract, the risk, and whatever's left when the night ends. Welcome to Nightfall City.",
     ],
-    note: "PLACEHOLDER COPY — replace body strings in content/site.ts",
+    note: "",
   },
 
   whitelist: {

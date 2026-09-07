@@ -2,6 +2,7 @@ import { site } from "@/content/site";
 
 export function Lore() {
   const { lore, assets } = site;
+  const note = (lore.note ?? "").trim();
 
   return (
     <section
@@ -26,9 +27,11 @@ export function Lore() {
               <p key={i}>{paragraph}</p>
             ))}
           </div>
-          <p className="mt-6 rounded-lg border border-dashed border-neon-purple/40 bg-neon-purple/5 px-3 py-2 font-mono text-[11px] text-neon-purple">
-            {lore.note}
-          </p>
+          {note ? (
+            <p className="mt-6 rounded-lg border border-dashed border-neon-purple/40 bg-neon-purple/5 px-3 py-2 font-mono text-[11px] text-neon-purple">
+              {note}
+            </p>
+          ) : null}
         </div>
       </div>
     </section>

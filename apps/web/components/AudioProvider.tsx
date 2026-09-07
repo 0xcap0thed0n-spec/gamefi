@@ -32,36 +32,71 @@ function createAudioContextOrNull(): globalThis.AudioContext | null {
   return new AC();
 }
 
-/** Tiny retro beep via Web Audio — no sample packs. */
-function beep(
+/** Soft arcade-plastic UI tick: brief noise + gentle sine/triangle, warm envelope. */
+function softTick(
   ctx: globalThis.AudioContext,
   opts: {
     freq: number;
     duration: number;
     type?: OscillatorType;
     gain?: number;
+    noiseGain?: number;
+    noiseMs?: number;
     slideTo?: number;
   },
 ) {
   const now = ctx.currentTime;
+  const master = ctx.createGain();
+  master.connect(ctx.destination);
+
+  const peak = opts.gain ?? 0.06;
+  master.gain.setValueAtTime(0.0001, now);
+  master.gain.exponentialRampToValueAtTime(peak, now + 0.006);
+  master.gain.exponentialRampToValueAtTime(peak * 0.45, now + opts.duration * 0.35);
+  master.gain.exponentialRampToValueAtTime(0.0001, now + opts.duration);
+
   const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.type = opts.type ?? "square";
+  const oscGain = ctx.createGain();
+  osc.type = opts.type ?? "sine";
   osc.frequency.setValueAtTime(opts.freq, now);
   if (opts.slideTo != null) {
     osc.frequency.exponentialRampToValueAtTime(
-      Math.max(20, opts.slideTo),
-      now + opts.duration,
+      Math.max(40, opts.slideTo),
+      now + opts.duration * 0.7,
     );
   }
-  const g = opts.gain ?? 0.05;
-  gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.exponentialRampToValueAtTime(g, now + 0.01);
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + opts.duration);
-  osc.connect(gain);
-  gain.connect(ctx.destination);
+  oscGain.gain.setValueAtTime(1, now);
+  osc.connect(oscGain);
+  oscGain.connect(master);
   osc.start(now);
   osc.stop(now + opts.duration + 0.02);
+
+  const noiseMs = opts.noiseMs ?? 0.012;
+  const noiseGainAmt = opts.noiseGain ?? 0;
+  if (noiseGainAmt > 0 && noiseMs > 0) {
+    const sampleRate = ctx.sampleRate;
+    const frames = Math.max(1, Math.floor(sampleRate * noiseMs));
+    const buffer = ctx.createBuffer(1, frames, sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < frames; i++) {
+      const t = i / frames;
+      data[i] = (Math.random() * 2 - 1) * (1 - t);
+    }
+    const noise = ctx.createBufferSource();
+    noise.buffer = buffer;
+    const ng = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.value = opts.freq * 1.4;
+    filter.Q.value = 0.9;
+    ng.gain.setValueAtTime(noiseGainAmt, now);
+    ng.gain.exponentialRampToValueAtTime(0.0001, now + noiseMs);
+    noise.connect(filter);
+    filter.connect(ng);
+    ng.connect(master);
+    noise.start(now);
+    noise.stop(now + noiseMs + 0.01);
+  }
 }
 
 export function AudioProvider({ children }: { children: ReactNode }) {
@@ -136,34 +171,42 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     void (async () => {
       const ctx = await ensureCtx();
       if (!ctx) return;
-      beep(ctx, {
-        freq: 880,
-        slideTo: 440,
-        duration: 0.08,
-        type: "square",
-        gain: 0.06,
-      });
-      beep(ctx, {
-        freq: 220,
-        duration: 0.05,
+      // Fuller two-layer plastic tick — not buzzy square
+      softTick(ctx, {
+        freq: 920,
+        slideTo: 620,
+        duration: 0.055,
         type: "triangle",
-        gain: 0.03,
+        gain: 0.07,
+        noiseGain: 0.045,
+        noiseMs: 0.014,
+      });
+      softTick(ctx, {
+        freq: 280,
+        duration: 0.07,
+        type: "sine",
+        gain: 0.045,
+        noiseGain: 0.02,
+        noiseMs: 0.01,
       });
     })();
   }, [ensureCtx]);
 
   const playHover = useCallback(() => {
     const now = performance.now();
-    if (now - hoverThrottle.current < 80) return;
+    // Heavily throttled soft high tick
+    if (now - hoverThrottle.current < 140) return;
     hoverThrottle.current = now;
     void (async () => {
       const ctx = await ensureCtx();
       if (!ctx) return;
-      beep(ctx, {
-        freq: 660,
-        duration: 0.04,
-        type: "square",
-        gain: 0.025,
+      softTick(ctx, {
+        freq: 1400,
+        duration: 0.028,
+        type: "sine",
+        gain: 0.035,
+        noiseGain: 0.018,
+        noiseMs: 0.008,
       });
     })();
   }, [ensureCtx]);
@@ -221,12 +264,12 @@ export function MuteToggle({ className = "" }: { className?: string }) {
         toggleMute();
       }}
       onMouseEnter={playHover}
-      className={`neon-btn-ghost inline-flex items-center gap-2 rounded-lg border border-neon-pink/30 bg-void-900/80 px-3 py-2 text-[11px] font-medium uppercase tracking-widest text-neon-cyan backdrop-blur transition hover:border-neon-pink hover:shadow-glow-pink ${className}`}
+      className={eon-btn-ghost inline-flex items-center gap-2 rounded-lg border border-neon-pink/30 bg-void-900/80 px-3 py-2 text-[11px] font-medium uppercase tracking-widest text-neon-cyan backdrop-blur transition hover:border-neon-pink hover:shadow-glow-pink \}
       aria-pressed={!muted}
       title={site.audio.hint}
     >
       <span aria-hidden className="font-pixel text-[10px]">
-        {muted ? "♪×" : "♪"}
+        {muted ? "🔇" : "🔊"}
       </span>
       <span className="hidden sm:inline">{label}</span>
       <span className="sm:hidden">{muted ? "Play" : "Mute"}</span>
