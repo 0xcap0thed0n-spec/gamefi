@@ -149,7 +149,6 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       el.loop = true;
       await el.play();
     } catch {
-      /* browsers block autoplay — stay muted until user retries */
       setMutedState(true);
     }
   }, [ensureTheme]);
@@ -171,7 +170,6 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     void (async () => {
       const ctx = await ensureCtx();
       if (!ctx) return;
-      // Fuller two-layer plastic tick — not buzzy square
       softTick(ctx, {
         freq: 920,
         slideTo: 620,
@@ -194,7 +192,6 @@ export function AudioProvider({ children }: { children: ReactNode }) {
 
   const playHover = useCallback(() => {
     const now = performance.now();
-    // Heavily throttled soft high tick
     if (now - hoverThrottle.current < 140) return;
     hoverThrottle.current = now;
     void (async () => {
@@ -264,12 +261,12 @@ export function MuteToggle({ className = "" }: { className?: string }) {
         toggleMute();
       }}
       onMouseEnter={playHover}
-      className={eon-btn-ghost inline-flex items-center gap-2 rounded-lg border border-neon-pink/30 bg-void-900/80 px-3 py-2 text-[11px] font-medium uppercase tracking-widest text-neon-cyan backdrop-blur transition hover:border-neon-pink hover:shadow-glow-pink \}
+      className={`neon-btn-ghost inline-flex items-center gap-2 rounded-lg border border-neon-pink/30 bg-void-900/80 px-3 py-2 text-[11px] font-medium uppercase tracking-widest text-neon-cyan backdrop-blur transition hover:border-neon-pink hover:shadow-glow-pink ${className}`}
       aria-pressed={!muted}
       title={site.audio.hint}
     >
       <span aria-hidden className="font-pixel text-[10px]">
-        {muted ? "🔇" : "🔊"}
+        {muted ? "OFF" : "ON"}
       </span>
       <span className="hidden sm:inline">{label}</span>
       <span className="sm:hidden">{muted ? "Play" : "Mute"}</span>
