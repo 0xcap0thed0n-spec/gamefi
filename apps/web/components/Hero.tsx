@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { site } from "@/content/site";
 import { MuteToggle, useAudio } from "./AudioProvider";
 
@@ -17,24 +18,38 @@ export function Hero() {
           <MuteToggle />
         </div>
 
-        <p className="font-pixel text-[10px] uppercase tracking-[0.35em] text-neon-blue sm:text-xs">
-          80s · cyberpunk · nft
-        </p>
+        <div className="mb-6 flex flex-col items-center gap-4 sm:mb-8 sm:flex-row sm:gap-6">
+          <Image
+            src={site.assets.logo}
+            alt={`${site.name} logo`}
+            width={128}
+            height={128}
+            priority
+            className="neon-logo h-24 w-24 rounded-2xl object-cover sm:h-28 sm:w-28"
+          />
+          <div className="flex flex-col items-center sm:items-start sm:text-left">
+            <p className="font-pixel text-[10px] uppercase tracking-[0.35em] text-neon-blue sm:text-xs">
+              80s · cyberpunk · nft
+            </p>
+            <h1 className="glitch-title mt-3 font-display text-4xl font-bold uppercase leading-none tracking-[0.08em] text-white sm:text-6xl md:text-7xl lg:text-8xl">
+              <span className="glitch-text" data-text={site.title}>
+                {site.title}
+              </span>
+            </h1>
+          </div>
+        </div>
 
-        <h1 className="glitch-title mt-4 font-display text-4xl font-bold uppercase leading-none tracking-[0.08em] text-white sm:text-6xl md:text-7xl lg:text-8xl">
-          <span className="glitch-text" data-text={site.title}>
-            {site.title}
-          </span>
-        </h1>
-
-        <p className="mt-6 max-w-xl text-base leading-relaxed text-zinc-300 sm:text-lg">
+        <p className="mt-2 max-w-xl text-base leading-relaxed text-zinc-300 sm:text-lg">
           {site.tagline}
         </p>
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
           <a
             href={site.hero.ctaPrimaryHref}
-            className="neon-btn"
+            className="neon-btn neon-btn-cyan-art"
+            style={{
+              backgroundImage: `url(${site.assets.neonButton})`,
+            }}
             onClick={playClick}
             onMouseEnter={playHover}
           >

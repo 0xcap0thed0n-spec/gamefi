@@ -116,9 +116,18 @@ export const site = {
   },
 
   audio: {
-    muteLabel: "Unmute ambience",
-    unmuteLabel: "Mute ambience",
-    hint: "Arcade clicks on · ambient off by default",
+    muteLabel: "Play theme",
+    unmuteLabel: "Mute theme",
+    hint: "Ninjatheme3 · click play (browsers block autoplay)",
+  },
+
+  assets: {
+    logo: "/images/logo.jpg",
+    theme: "/audio/ninjatheme3.wav",
+    neonButton: "/images/neon-button-cyan.png",
+    neonPanel: "/images/neon-panel-pink.png",
+    neonPanelAlt: "/images/neon-panel-pink-alt.png",
+    neonPanelWide: "/images/neon-panel-pink-wide.png",
   },
 } as const;
 

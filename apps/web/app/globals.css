@@ -144,6 +144,41 @@ body {
   mix-blend-mode: screen;
 }
 
+/* —— Local asset utilities —— */
+.neon-logo {
+  box-shadow:
+    0 0 0 2px rgba(0, 245, 255, 0.35),
+    0 0 24px rgba(255, 45, 149, 0.55),
+    0 0 48px rgba(0, 245, 255, 0.25);
+  filter: saturate(1.15) contrast(1.05);
+}
+
+.neon-panel-frame {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.neon-btn-cyan-art {
+  background-color: transparent !important;
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: #051018 !important;
+  text-shadow: 0 0 8px rgba(0, 245, 255, 0.35);
+  box-shadow:
+    0 0 18px rgba(0, 245, 255, 0.45),
+    inset 0 0 12px rgba(0, 245, 255, 0.15) !important;
+  border: 1px solid rgba(0, 245, 255, 0.35);
+}
+
+.neon-btn-cyan-art:hover {
+  filter: brightness(1.08) saturate(1.1);
+  box-shadow:
+    0 0 28px rgba(0, 245, 255, 0.65),
+    0 0 40px rgba(255, 45, 149, 0.2) !important;
+}
+
 @layer components {
   .badge-neon {
     @apply inline-flex items-center rounded-full border border-neon-pink/40 bg-neon-pink/10 px-3 py-1 font-pixel text-[8px] uppercase tracking-[0.2em] text-neon-pink sm:text-[9px];

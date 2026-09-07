@@ -66,12 +66,7 @@ function beep(
 
 export function AudioProvider({ children }: { children: ReactNode }) {
   const ctxRef = useRef<globalThis.AudioContext | null>(null);
-  const droneRef = useRef<{
-    oscA: OscillatorNode;
-    oscB: OscillatorNode;
-    noise: AudioBufferSourceNode;
-    master: GainNode;
-  } | null>(null);
+  const themeRef = useRef<HTMLAudioElement | null>(null);
   const [muted, setMutedState] = useState(true);
   const hoverThrottle = useRef(0);
 
@@ -89,74 +84,48 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     return ctx;
   }, []);
 
-  const stopDrone = useCallback(() => {
-    const d = droneRef.current;
-    if (!d) return;
-    try {
-      d.master.gain.setTargetAtTime(0, d.master.context.currentTime, 0.05);
-      d.oscA.stop();
-      d.oscB.stop();
-      d.noise.stop();
-    } catch {
-      /* already stopped */
+  const ensureTheme = useCallback(() => {
+    if (typeof window === "undefined") return null;
+    if (!themeRef.current) {
+      const el = new Audio(site.assets.theme);
+      el.loop = true;
+      el.preload = "auto";
+      el.volume = 0.45;
+      themeRef.current = el;
     }
-    droneRef.current = null;
+    return themeRef.current;
   }, []);
 
-  const startDrone = useCallback(async () => {
-    const ctx = await ensureCtx();
-    if (!ctx || droneRef.current) return;
-
-    const master = ctx.createGain();
-    master.gain.value = 0.0001;
-    master.connect(ctx.destination);
-
-    const oscA = ctx.createOscillator();
-    const oscB = ctx.createOscillator();
-    oscA.type = "sine";
-    oscB.type = "triangle";
-    oscA.frequency.value = 55;
-    oscB.frequency.value = 82.5;
-    const droneGain = ctx.createGain();
-    droneGain.gain.value = 0.035;
-    oscA.connect(droneGain);
-    oscB.connect(droneGain);
-    droneGain.connect(master);
-
-    const bufferSize = ctx.sampleRate * 2;
-    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-      data[i] = (Math.random() * 2 - 1) * 0.15;
+  const pauseTheme = useCallback(() => {
+    const el = themeRef.current;
+    if (!el) return;
+    try {
+      el.pause();
+    } catch {
+      /* ignore */
     }
-    const noise = ctx.createBufferSource();
-    noise.buffer = buffer;
-    noise.loop = true;
-    const noiseFilter = ctx.createBiquadFilter();
-    noiseFilter.type = "bandpass";
-    noiseFilter.frequency.value = 800;
-    noiseFilter.Q.value = 0.5;
-    const noiseGain = ctx.createGain();
-    noiseGain.gain.value = 0.012;
-    noise.connect(noiseFilter);
-    noiseFilter.connect(noiseGain);
-    noiseGain.connect(master);
+  }, []);
 
-    oscA.start();
-    oscB.start();
-    noise.start();
-    master.gain.exponentialRampToValueAtTime(1, ctx.currentTime + 0.8);
-
-    droneRef.current = { oscA, oscB, noise, master };
-  }, [ensureCtx]);
+  const playTheme = useCallback(async () => {
+    const el = ensureTheme();
+    if (!el) return;
+    try {
+      el.volume = 0.45;
+      el.loop = true;
+      await el.play();
+    } catch {
+      /* browsers block autoplay — stay muted until user retries */
+      setMutedState(true);
+    }
+  }, [ensureTheme]);
 
   const setMuted = useCallback(
     (value: boolean) => {
       setMutedState(value);
-      if (value) stopDrone();
-      else void startDrone();
+      if (value) pauseTheme();
+      else void playTheme();
     },
-    [startDrone, stopDrone],
+    [pauseTheme, playTheme],
   );
 
   const toggleMute = useCallback(() => {
@@ -201,10 +170,14 @@ export function AudioProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     return () => {
-      stopDrone();
+      pauseTheme();
+      if (themeRef.current) {
+        themeRef.current.src = "";
+        themeRef.current = null;
+      }
       void ctxRef.current?.close();
     };
-  }, [stopDrone]);
+  }, [pauseTheme]);
 
   const api = useMemo<AudioApi>(
     () => ({
@@ -256,7 +229,7 @@ export function MuteToggle({ className = "" }: { className?: string }) {
         {muted ? "♪×" : "♪"}
       </span>
       <span className="hidden sm:inline">{label}</span>
-      <span className="sm:hidden">{muted ? "Audio" : "Mute"}</span>
+      <span className="sm:hidden">{muted ? "Play" : "Mute"}</span>
     </button>
   );
 }
