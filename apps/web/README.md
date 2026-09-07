@@ -1,12 +1,13 @@
-# @555-genesis/web
+# @555-genesis/web — Nightfall City
 
-Next.js App Router site for **555 Genesis** — landing, mint/packs stub, and portfolio stub.
+Next.js App Router single-page site for **Nightfall City** — synthwave / Hotline Miami aesthetic, lore placeholder, whitelist form, roadmap teaser.
 
 ## Run locally
 
 From the **repo root** (recommended):
 
 ```bash
+git pull
 pnpm install
 pnpm dev
 ```
@@ -20,12 +21,23 @@ pnpm dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-## Pages
+## Structure
 
-| Route | Purpose |
-|-------|---------|
-| `/` | Landing — pitch, supply table, CTAs |
-| `/mint` | Pack / forever-mint UI (Coming soon — testnet) |
-| `/portfolio` | Holdings UI with placeholder NFT cards |
+| Path | Purpose |
+|------|---------|
+| `content/site.ts` | All user-facing strings, lore placeholder, roadmap |
+| `components/Hero.tsx` | Title, tagline, CTAs, mute toggle |
+| `components/Lore.tsx` | Lore blurb (placeholder marked) |
+| `components/WhitelistForm.tsx` | Client-side whitelist form |
+| `components/Roadmap.tsx` | Coming-soon teaser cards |
+| `components/Footer.tsx` | Simple footer |
+| `components/ScanlineOverlay.tsx` | CRT scanlines / grain / vignette |
+| `components/AudioProvider.tsx` | Web Audio beeps + optional ambient |
+| `app/page.tsx` | Composes the single page |
+| `app/layout.tsx` | Metadata, fonts, providers |
 
-Wallet connect is a **stub** for now (MetaMask + Base testnet later).
+Legacy `/mint` and `/portfolio` redirect to `/`.
+
+## Editing copy
+
+Swap tagline, lore, and roadmap in `content/site.ts` — look for `LORE PLACEHOLDER` markers.

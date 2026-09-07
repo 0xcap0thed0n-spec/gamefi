@@ -2,7 +2,7 @@
   "name": "555-genesis",
   "private": true,
   "version": "0.1.0",
-  "description": "555 Genesis GameFi NFT monorepo — mint, portfolio, contracts, and game client",
+  "description": "Nightfall City — retro cyberpunk NFT monorepo (site, contracts, tooling)",
   "scripts": {
     "dev": "pnpm --filter @555-genesis/web dev",
     "build": "pnpm --filter @555-genesis/web build",
