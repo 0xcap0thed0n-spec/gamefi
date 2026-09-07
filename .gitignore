@@ -1,0 +1,16 @@
+node_modules/
+dist/
+build/
+out/
+cache/
+coverage/
+.env
+.env.*
+!.env.example
+.DS_Store
+*.log
+.vscode/
+.idea/
+artifacts/
+typechain-types/
+broadcast/
