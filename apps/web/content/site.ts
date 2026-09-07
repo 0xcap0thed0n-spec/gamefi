@@ -116,8 +116,8 @@ export const site = {
   },
 
   assets: {
-    logo: "/images/logo.jpg",
-    background: "/images/background-art.jpeg",
+    logo: "/images/logo-transparent.png",
+    background: "/images/background-art-v2.jpeg",
     theme: "/audio/ninjatheme3.wav",
     neonButton: "/images/neon-button-cyan.png",
     neonPanel: "/images/neon-panel-pink.png",

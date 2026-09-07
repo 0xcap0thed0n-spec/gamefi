@@ -25,7 +25,7 @@ export function Hero() {
             width={480}
             height={480}
             priority
-            className="neon-logo h-auto w-56 rounded-xl object-contain sm:w-72 md:w-80 lg:w-[22rem]"
+            className="neon-logo h-auto w-56 object-contain sm:w-72 md:w-80 lg:w-[22rem]"
           />
         </div>
 
