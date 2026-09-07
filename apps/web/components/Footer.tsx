@@ -1,37 +1,48 @@
-import Link from "next/link";
+"use client";
+
+import { site } from "@/content/site";
+import { useAudio } from "./AudioProvider";
 
 export function Footer() {
+  const { footer, name } = site;
+  const { playClick, playHover } = useAudio();
+
   return (
-    <footer className="mt-auto border-t border-white/10 bg-void-900/50">
-      <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-8 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+    <footer className="mt-auto border-t border-white/10 bg-void-950/90">
+      <div className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-10 sm:flex-row sm:items-start sm:justify-between sm:px-6">
         <div>
-          <p className="font-display text-sm font-semibold text-white">
-            555 Genesis
+          <p className="font-display text-sm font-semibold uppercase tracking-[0.2em] text-white">
+            {name}
           </p>
-          <p className="mt-1 max-w-md text-xs text-zinc-500">
-            GameFi NFT characters with real utility. Genesis 555 then full drop
-            5,555. Testnet first — no mainnet yet.
+          <p className="mt-2 max-w-sm text-xs leading-relaxed text-zinc-500">
+            {footer.blurb}
           </p>
         </div>
-        <div className="flex flex-wrap gap-4 text-xs text-zinc-400">
-          <Link href="/mint" className="hover:text-neon-cyan">
-            Mint
-          </Link>
-          <Link href="/portfolio" className="hover:text-neon-cyan">
-            Portfolio
-          </Link>
-          <a
-            href="https://github.com/0xcap0thed0n-spec/gamefi"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-neon-cyan"
-          >
-            GitHub
-          </a>
-        </div>
+        <nav
+          className="flex flex-wrap gap-x-5 gap-y-2 text-xs uppercase tracking-wider text-zinc-400"
+          aria-label="Footer"
+        >
+          {footer.links.map((link) => {
+            const external = "external" in link && link.external;
+            return (
+              <a
+                key={link.href}
+                href={link.href}
+                className="transition hover:text-neon-pink"
+                onClick={playClick}
+                onMouseEnter={playHover}
+                {...(external
+                  ? { target: "_blank", rel: "noopener noreferrer" }
+                  : {})}
+              >
+                {link.label}
+              </a>
+            );
+          })}
+        </nav>
       </div>
-      <div className="border-t border-white/5 py-3 text-center text-[11px] text-zinc-600">
-        Built for learning on Base testnet · Placeholder UI · Not financial advice
+      <div className="border-t border-white/5 py-3 text-center font-mono text-[10px] text-zinc-600">
+        {footer.credit}
       </div>
     </footer>
   );

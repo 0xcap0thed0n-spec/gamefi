@@ -50,17 +50,17 @@ export const site = {
       },
       wallet: {
         label: "Wallet address",
-        placeholder: "0x\u2026",
+        placeholder: "0x…",
         name: "wallet",
       },
       reason: {
         label: "Why Nightfall?",
-        placeholder: "One short line \u2014 keep it sharp.",
+        placeholder: "One short line — keep it sharp.",
         name: "reason",
       },
     },
     submit: "Transmit Signal",
-    submitting: "Transmitting\u2026",
+    submitting: "Transmitting…",
     successTitle: "Signal received.",
     successBody:
       "You're on the local frequency list. When backend wiring lands, this will sync for real. For now we logged your payload to the console.",
@@ -71,7 +71,7 @@ export const site = {
     id: "roadmap",
     eyebrow: "TIMELINE // COMING SOON",
     title: "Roadmap teaser",
-    subtitle: "Hard dates TBD. Soft promises only \u2014 the city lies until it doesn't.",
+    subtitle: "Hard dates TBD. Soft promises only — the city lies until it doesn't.",
     items: [
       {
         phase: "01",
@@ -101,7 +101,7 @@ export const site = {
   },
 
   footer: {
-    blurb: "Nightfall City \u2014 stylish, mysterious, slightly dangerous. Not financial advice.",
+    blurb: "Nightfall City — stylish, mysterious, slightly dangerous. Not financial advice.",
     links: [
       { label: "Whitelist", href: "#whitelist" },
       { label: "Lore", href: "#lore" },
@@ -112,13 +112,13 @@ export const site = {
         external: true,
       },
     ],
-    credit: "Synthwave nights \u00b7 CRT optional \u00b7 Art & lore placeholders welcome",
+    credit: "Synthwave nights · CRT optional · Art & lore placeholders welcome",
   },
 
   audio: {
     muteLabel: "Unmute ambience",
     unmuteLabel: "Mute ambience",
-    hint: "Arcade clicks on \u00b7 ambient off by default",
+    hint: "Arcade clicks on · ambient off by default",
   },
 } as const;
 

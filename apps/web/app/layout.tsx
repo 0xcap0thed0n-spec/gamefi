@@ -1,13 +1,21 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Inter } from "next/font/google";
-import { Nav } from "@/components/Nav";
+import { Orbitron, Press_Start_2P, Inter } from "next/font/google";
+import { AudioProvider } from "@/components/AudioProvider";
+import { ScanlineOverlay } from "@/components/ScanlineOverlay";
 import { Footer } from "@/components/Footer";
+import { site } from "@/content/site";
 import "./globals.css";
 
-const display = Space_Grotesk({
+const display = Orbitron({
   subsets: ["latin"],
   variable: "--font-display",
-  weight: ["500", "600", "700"],
+  weight: ["500", "600", "700", "800"],
+});
+
+const pixel = Press_Start_2P({
+  subsets: ["latin"],
+  variable: "--font-pixel",
+  weight: ["400"],
 });
 
 const body = Inter({
@@ -17,20 +25,24 @@ const body = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "555 Genesis | GameFi NFT",
-    template: "%s | 555 Genesis",
+    default: `${site.name} | Retro Cyberpunk NFT`,
+    template: `%s | ${site.name}`,
   },
-  description:
-    "555 Genesis characters with GameFi utility. Mint packs, view your portfolio, and play — starting on Base testnet.",
+  description: site.description,
 };
 
 export default function RootLayout(props: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={display.variable + " " + body.variable}>
+    <html
+      lang="en"
+      className={`${display.variable} ${pixel.variable} ${body.variable}`}
+    >
       <body className="flex min-h-screen flex-col">
-        <Nav />
-        <main className="flex-1">{props.children}</main>
-        <Footer />
+        <AudioProvider>
+          <ScanlineOverlay />
+          <main className="relative z-10 flex-1">{props.children}</main>
+          <Footer />
+        </AudioProvider>
       </body>
     </html>
   );

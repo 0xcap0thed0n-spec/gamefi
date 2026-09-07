@@ -13,26 +13,213 @@ html {
 body {
   @apply bg-void-950 text-zinc-100 antialiased font-body;
   min-height: 100vh;
+  background-image: theme("backgroundImage.hero-radial");
+  background-attachment: fixed;
+}
+
+/* —— CRT / VHS overlays —— */
+.scanlines {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  opacity: 0.12;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 2px,
+    rgba(0, 0, 0, 0.45) 2px,
+    rgba(0, 0, 0, 0.45) 3px
+  );
+}
+
+.vhs-grain {
+  pointer-events: none;
+  position: fixed;
+  inset: -20%;
+  z-index: 49;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain-shift 0.4s steps(2) infinite;
+}
+
+.vignette {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 48;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 50%,
+    rgba(5, 4, 10, 0.65) 100%
+  );
+}
+
+@keyframes grain-shift {
+  0% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-1%, 1%);
+  }
+  100% {
+    transform: translate(1%, -1%);
+  }
+}
+
+/* —— Hero atmosphere —— */
+.hero-grid {
+  background-image: theme("backgroundImage.grid-fade");
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, black, transparent);
+  opacity: 0.55;
+}
+
+.hero-glow {
+  background-image: theme("backgroundImage.hero-radial");
+}
+
+.perspective-road {
+  perspective: 320px;
+  perspective-origin: 50% 0%;
+}
+
+.road-grid {
+  height: 200%;
+  width: 100%;
+  transform: rotateX(62deg) translateY(-20%);
+  transform-origin: center top;
+  background-image:
+    linear-gradient(to right, rgba(255, 45, 149, 0.35) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 245, 255, 0.25) 1px, transparent 1px);
+  background-size: 40px 40px;
+  animation: road-scroll 1.2s linear infinite;
+  mask-image: linear-gradient(to bottom, black, transparent 85%);
+}
+
+@keyframes road-scroll {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 0 40px;
+  }
+}
+
+/* —— Glitch title —— */
+.glitch-title {
+  animation: flicker 5s infinite;
+  text-shadow:
+    0 0 12px rgba(255, 45, 149, 0.55),
+    0 0 32px rgba(0, 245, 255, 0.25);
+}
+
+.glitch-text {
+  position: relative;
+  display: inline-block;
+}
+
+.glitch-text:hover::before,
+.glitch-text:hover::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.glitch-text:hover::before {
+  color: #00f5ff;
+  transform: translate(-2px, 1px);
+  clip-path: inset(0 0 55% 0);
+  opacity: 0.85;
+  mix-blend-mode: screen;
+}
+
+.glitch-text:hover::after {
+  color: #ff2d95;
+  transform: translate(2px, -1px);
+  clip-path: inset(45% 0 0 0);
+  opacity: 0.85;
+  mix-blend-mode: screen;
 }
 
 @layer components {
-  .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-neon-cyan px-5 py-3 text-sm font-semibold text-void-950 transition hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neon-cyan disabled:cursor-not-allowed disabled:opacity-50;
+  .badge-neon {
+    @apply inline-flex items-center rounded-full border border-neon-pink/40 bg-neon-pink/10 px-3 py-1 font-pixel text-[8px] uppercase tracking-[0.2em] text-neon-pink sm:text-[9px];
   }
 
-  .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-semibold text-zinc-100 backdrop-blur transition hover:border-neon-cyan/40 hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neon-cyan;
+  .neon-card {
+    @apply rounded-2xl border border-neon-cyan/25 bg-void-900/75 shadow-glow backdrop-blur-md;
+    box-shadow:
+      0 0 0 1px rgba(0, 245, 255, 0.08),
+      0 0 40px rgba(0, 245, 255, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
   }
 
-  .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-zinc-300 transition hover:bg-white/5 hover:text-white;
+  .neon-card-pink {
+    @apply border-neon-pink/30 shadow-glow-pink;
+    box-shadow:
+      0 0 0 1px rgba(255, 45, 149, 0.12),
+      0 0 48px rgba(255, 45, 149, 0.14),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
   }
 
-  .panel {
-    @apply rounded-2xl border border-white/10 bg-void-800/70 backdrop-blur-md shadow-glow;
+  .neon-btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-neon-pink px-6 py-3 text-sm font-semibold uppercase tracking-wider text-void-950 transition duration-200;
+    box-shadow: 0 0 20px rgba(255, 45, 149, 0.45);
   }
 
-  .badge {
-    @apply inline-flex items-center rounded-full border border-neon-magenta/30 bg-neon-magenta/10 px-3 py-1 text-xs font-medium uppercase tracking-wider text-neon-magenta;
+  .neon-btn:hover {
+    @apply brightness-110;
+    box-shadow:
+      0 0 28px rgba(255, 45, 149, 0.7),
+      0 0 48px rgba(0, 245, 255, 0.25);
+    transform: translateY(-1px);
+  }
+
+  .neon-btn:focus-visible {
+    @apply outline outline-2 outline-offset-2 outline-neon-cyan;
+  }
+
+  .neon-btn:disabled {
+    @apply cursor-not-allowed opacity-50;
+    transform: none;
+  }
+
+  .neon-btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-neon-cyan/40 bg-void-900/60 px-6 py-3 text-sm font-semibold uppercase tracking-wider text-neon-cyan backdrop-blur transition duration-200;
+  }
+
+  .neon-btn-secondary:hover {
+    @apply border-neon-cyan bg-neon-cyan/10;
+    box-shadow: 0 0 24px rgba(0, 245, 255, 0.35);
+    transform: translateY(-1px);
+  }
+
+  .neon-btn-ghost {
+    @apply transition duration-200;
+  }
+
+  .neon-input {
+    @apply w-full rounded-xl border border-white/10 bg-void-950/80 px-4 py-3 text-sm text-zinc-100 placeholder:text-zinc-600 outline-none transition;
+  }
+
+  .neon-input:focus {
+    @apply border-neon-pink/50;
+    box-shadow: 0 0 0 1px rgba(255, 45, 149, 0.35), 0 0 20px rgba(255, 45, 149, 0.15);
+  }
+}
+
+/* Reduce motion: tone down animations */
+@media (prefers-reduced-motion: reduce) {
+  .glitch-title,
+  .road-grid,
+  .vhs-grain {
+    animation: none !important;
+  }
+
+  html {
+    scroll-behavior: auto;
   }
 }
