@@ -78,7 +78,7 @@ export const site = {
     xConnectedBadge: "Connected",
     xNotConfigured: "Twitter not configured — add keys in .env.local (see .env.example).",
     submit: "Transmit Signal",
-    submitting: "Transmitting…",
+    submitting: "Transmitting...",
     submitBlocked: "Paste a valid wallet, connect X, and add a reason to submit.",
     successTitle: "Signal received.",
     successBody:

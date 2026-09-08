@@ -184,7 +184,7 @@ export function WhitelistForm() {
                     {whitelist.xNotConfigured}
                   </p>
                 ) : xLoading ? (
-                  <div className="neon-input text-sm text-zinc-500">Checking X session…</div>
+                  <div className="neon-input text-sm text-zinc-500">Checking X session...</div>
                 ) : xUser ? (
                   <div className="neon-input flex w-full items-center justify-between gap-3 text-sm">
                     <span className="font-mono text-neon-cyan">@{xUser.username}</span>

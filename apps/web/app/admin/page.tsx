@@ -11,7 +11,7 @@ export default async function AdminPage() {
     <main className="relative z-10 mx-auto max-w-5xl px-4 py-12 sm:px-6">
       <h1 className="font-display text-2xl font-semibold text-white">Whitelist applications</h1>
       <p className="mt-2 text-sm text-zinc-400">
-        {data.length} total · {pendingCount} pending review · stored locally (no Supabase)
+        {data.length} total / {pendingCount} pending review / stored locally (no Supabase)
       </p>
       <AdminTable submissions={data} />
     </main>
