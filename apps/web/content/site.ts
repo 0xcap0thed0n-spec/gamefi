@@ -31,15 +31,15 @@ export const site = {
   },
 
   /**
-   * X / Twitter whitelist verification targets.
-   * Required OAuth 2.0 scopes (set at developer.x.com, NOT here):
-   *   tweet.read  users.read  follows.read  like.read  offline.access
-   * Secrets live in env: TWITTER_CLIENT_ID, TWITTER_CLIENT_SECRET (optional),
+   * X / Twitter OAuth targets (optional — plug in later for follow/like/retweet checks).
+   * Connect-only flow does not require these today.
+   * OAuth secrets live in env: TWITTER_CLIENT_ID, TWITTER_CLIENT_SECRET (optional),
    * TWITTER_CALLBACK_URL, TWITTER_SESSION_SECRET (optional).
    */
   twitter: {
-    targetUsername: "NightfallCity", // placeholder — change to your real @handle (no @)
-    targetTweetId: "", // placeholder — paste the tweet ID users must like + retweet
+    // Plug in later when enabling follow/like/retweet verification:
+    targetUsername: "", // e.g. "NightfallCity" (no @)
+    targetTweetId: "", // e.g. announcement tweet ID
   },
 
   whitelist: {
@@ -47,10 +47,10 @@ export const site = {
     eyebrow: "ACCESS // WHITELIST",
     title: "Enter the Frequency",
     subtitle:
-      "Connect your wallet and X account, verify the checklist, then send a short reason. Every application is signature-verified and reviewed by hand.",
+      "Paste your wallet address, connect X, and tell us why Nightfall. Applications are reviewed by hand.",
     fields: {
       wallet: {
-        label: "Wallet",
+        label: "Wallet address",
         placeholder: "0x…",
         name: "wallet",
       },
@@ -70,24 +70,16 @@ export const site = {
         name: "referral",
       },
     },
-    connectPrompt: "Connect a wallet to apply.",
-    connectCta: "Connect Wallet",
+    walletHint: "Paste a standard EVM address (0x + 40 hex). No wallet extension required.",
+    walletInvalid: "Enter a valid 0x wallet address (40 hex characters).",
+    connectPrompt: "Paste your wallet and connect X to apply.",
     connectXCta: "Connect X",
     reconnectXCta: "Reconnect X",
     xConnectedBadge: "Connected",
     xNotConfigured: "Twitter not configured — add keys in .env.local (see .env.example).",
-    verifyFollowLabel: "Follow",
-    verifyLikeLabel: "Like the announcement tweet",
-    verifyRetweetLabel: "Retweet the announcement tweet",
-    verifyCta: "Verify",
-    verifyingCta: "Checking…",
-    verifiedOk: "Verified",
-    checklistHint: "Complete all three checks after connecting X.",
-    verifiedBadge: "Connected",
-    signatureHint: "We verify wallet ownership with a free signature — no transaction, no gas.",
     submit: "Transmit Signal",
     submitting: "Transmitting…",
-    submitBlocked: "Connect X and verify follow, like, and retweet to submit.",
+    submitBlocked: "Paste a valid wallet, connect X, and add a reason to submit.",
     successTitle: "Signal received.",
     successBody:
       "You're in the review queue. Applications are read by hand — if it's a match, you'll hear from us on the frequency you gave.",

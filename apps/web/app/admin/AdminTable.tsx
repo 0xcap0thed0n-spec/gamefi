@@ -59,10 +59,10 @@ export function AdminTable({ submissions }: { submissions: Submission[] }) {
             <tr key={row.id} className="border-b border-white/5 align-top">
               <td className="py-3 pr-4 text-zinc-200">{row.twitter}</td>
               <td className="py-3 pr-4 font-mono text-xs text-zinc-400">
-                {row.wallet.slice(0, 6)}…{row.wallet.slice(-4)}
+                {row.wallet.slice(0, 6)}...{row.wallet.slice(-4)}
               </td>
               <td className="max-w-xs py-3 pr-4 text-zinc-300">{row.reason}</td>
-              <td className="py-3 pr-4 text-zinc-400">{row.referral || "—"}</td>
+              <td className="py-3 pr-4 text-zinc-400">{row.referral || "-"}</td>
               <td className="py-3 pr-4 whitespace-nowrap text-zinc-500">
                 {new Date(row.created_at).toLocaleString()}
               </td>

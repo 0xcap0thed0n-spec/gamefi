@@ -1,26 +1,19 @@
 import { NextResponse } from "next/server";
-import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { updateWhitelistStatus } from "@/lib/whitelistStore";
 
-// Auth is already enforced by middleware.ts for every /api/admin/* path.
 export async function PATCH(req: Request) {
-  const body = await req.json().catch(() => null);
-  const id = typeof body?.id === "string" ? body.id : null;
-  const status = body?.status;
-
-  if (!id || !["approved", "rejected", "pending"].includes(status)) {
-    return NextResponse.json({ error: "Bad request." }, { status: 400 });
+  try {
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body.id !== "string" || (body.status !== "approved" && body.status !== "rejected")) {
+      return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+    }
+    const ok = await updateWhitelistStatus(body.id, body.status);
+    if (!ok) {
+      return NextResponse.json({ error: "Not found." }, { status: 404 });
+    }
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("[admin/update]", err);
+    return NextResponse.json({ error: "Update failed." }, { status: 500 });
   }
-
-  const supabase = getSupabaseAdmin();
-  const { error } = await supabase
-    .from("whitelist_submissions")
-    .update({ status })
-    .eq("id", id);
-
-  if (error) {
-    console.error("[admin/update] supabase error", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  return NextResponse.json({ ok: true });
 }

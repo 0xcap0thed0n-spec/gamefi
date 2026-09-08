@@ -1,38 +1,24 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
-import { useAccount, useSignMessage } from "wagmi";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { site } from "@/content/site";
 import { useAudio } from "./AudioProvider";
 
 type FormState = {
+  wallet: string;
   reason: string;
   referral: string;
 };
 
 type XUser = { id: string; username: string; name: string };
 
-type VerifyKey = "follow" | "like" | "retweet";
+const empty: FormState = { wallet: "", reason: "", referral: "" };
 
-type VerifyState = {
-  status: "idle" | "loading" | "ok" | "fail";
-  detail: string;
-};
-
-const empty: FormState = { reason: "", referral: "" };
-
-const emptyVerify: Record<VerifyKey, VerifyState> = {
-  follow: { status: "idle", detail: "" },
-  like: { status: "idle", detail: "" },
-  retweet: { status: "idle", detail: "" },
-};
+const WALLET_RE = /^0x[a-fA-F0-9]{40}$/;
 
 export function WhitelistForm() {
-  const { whitelist, assets, twitter } = site;
+  const { whitelist, assets } = site;
   const { playClick, playHover } = useAudio();
-  const { address, isConnected } = useAccount();
-  const { signMessageAsync } = useSignMessage();
 
   const [values, setValues] = useState<FormState>(empty);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
@@ -42,17 +28,10 @@ export function WhitelistForm() {
   const [xLoading, setXLoading] = useState(true);
   const [xConfigured, setXConfigured] = useState(true);
   const [xError, setXError] = useState("");
-  const [verify, setVerify] = useState(emptyVerify);
 
-  const allVerified = useMemo(
-    () =>
-      verify.follow.status === "ok" &&
-      verify.like.status === "ok" &&
-      verify.retweet.status === "ok",
-    [verify],
-  );
-
-  const canSubmit = isConnected && !!xUser && allVerified && status !== "submitting";
+  const walletOk = WALLET_RE.test(values.wallet.trim());
+  const canSubmit =
+    walletOk && !!xUser && values.reason.trim().length > 0 && status !== "submitting";
 
   const refreshMe = useCallback(async () => {
     setXLoading(true);
@@ -100,89 +79,24 @@ export function WhitelistForm() {
     setValues((prev) => ({ ...prev, [key]: value }));
   }
 
-  async function runVerify(action: VerifyKey) {
-    playClick();
-    setVerify((prev) => ({
-      ...prev,
-      [action]: { status: "loading", detail: "" },
-    }));
-    try {
-      const res = await fetch("/api/twitter/verify", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (res.status === 503) {
-        setXConfigured(false);
-        setVerify((prev) => ({
-          ...prev,
-          [action]: { status: "fail", detail: data.error || whitelist.xNotConfigured },
-        }));
-        return;
-      }
-      if (!res.ok) {
-        setVerify((prev) => ({
-          ...prev,
-          [action]: {
-            status: "fail",
-            detail: data.error || data.detail || "Verification failed",
-          },
-        }));
-        return;
-      }
-      setVerify((prev) => ({
-        ...prev,
-        [action]: {
-          status: data.verified ? "ok" : "fail",
-          detail: data.detail || (data.verified ? whitelist.verifiedOk : "Not verified yet"),
-        },
-      }));
-    } catch (err) {
-      setVerify((prev) => ({
-        ...prev,
-        [action]: {
-          status: "fail",
-          detail: err instanceof Error ? err.message : "Verification failed",
-        },
-      }));
-    }
-  }
-
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!address || !xUser || !allVerified) return;
+    if (!walletOk || !xUser || !values.reason.trim()) return;
     setStatus("submitting");
     setErrorMsg("");
     playClick();
 
-    const timestamp = new Date().toISOString();
     const twitterHandle = `@${xUser.username}`;
-    const message = [
-      "Nightfall City — Whitelist Application",
-      "",
-      `Wallet: ${address}`,
-      `Twitter: ${twitterHandle}`,
-      `Timestamp: ${timestamp}`,
-      "",
-      "Signing this proves you control this wallet. No transaction, no gas, no cost.",
-    ].join("\n");
 
     try {
-      const signature = await signMessageAsync({ message });
-
       const res = await fetch("/api/whitelist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           twitter: twitterHandle,
-          wallet: address,
+          wallet: values.wallet.trim(),
           reason: values.reason,
           referral: values.referral || undefined,
-          message,
-          signature,
-          timestamp,
         }),
       });
 
@@ -203,29 +117,7 @@ export function WhitelistForm() {
     setValues(empty);
     setStatus("idle");
     setErrorMsg("");
-    setVerify(emptyVerify);
   }
-
-  const followTarget = `@${twitter.targetUsername.replace(/^@/, "")}`;
-  const tweetConfigured = Boolean(twitter.targetTweetId);
-
-  const checklist: Array<{ key: VerifyKey; label: string; href?: string }> = [
-    {
-      key: "follow",
-      label: `${whitelist.verifyFollowLabel} ${followTarget}`,
-      href: `https://x.com/${twitter.targetUsername.replace(/^@/, "")}`,
-    },
-    {
-      key: "like",
-      label: whitelist.verifyLikeLabel,
-      href: tweetConfigured ? `https://x.com/i/web/status/${twitter.targetTweetId}` : undefined,
-    },
-    {
-      key: "retweet",
-      label: whitelist.verifyRetweetLabel,
-      href: tweetConfigured ? `https://x.com/i/web/status/${twitter.targetTweetId}` : undefined,
-    },
-  ];
 
   return (
     <section
@@ -262,37 +154,26 @@ export function WhitelistForm() {
             </div>
           ) : (
             <form className="mt-8 space-y-5" onSubmit={onSubmit}>
-              <div className="space-y-2">
+              <label className="block space-y-2">
                 <span className="text-xs font-medium uppercase tracking-wider text-zinc-400">
                   {whitelist.fields.wallet.label}
                 </span>
-                <ConnectButton.Custom>
-                  {({ account, openConnectModal, mounted }) => {
-                    const connected = mounted && !!account;
-                    return connected ? (
-                      <div className="neon-input flex w-full items-center justify-between font-mono text-sm">
-                        <span>{account!.displayName}</span>
-                        <span className="text-[10px] uppercase tracking-wider text-neon-cyan">
-                          {whitelist.verifiedBadge}
-                        </span>
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        className="neon-btn-secondary w-full"
-                        onClick={() => {
-                          playClick();
-                          openConnectModal();
-                        }}
-                        onMouseEnter={playHover}
-                      >
-                        {whitelist.connectCta}
-                      </button>
-                    );
-                  }}
-                </ConnectButton.Custom>
-                <p className="text-[11px] text-zinc-500">{whitelist.signatureHint}</p>
-              </div>
+                <input
+                  required
+                  name={whitelist.fields.wallet.name}
+                  value={values.wallet}
+                  onChange={(e) => onChange("wallet", e.target.value)}
+                  placeholder={whitelist.fields.wallet.placeholder}
+                  className="neon-input font-mono text-sm"
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+                {values.wallet && !walletOk ? (
+                  <p className="text-[11px] text-neon-pink">{whitelist.walletInvalid}</p>
+                ) : (
+                  <p className="text-[11px] text-zinc-500">{whitelist.walletHint}</p>
+                )}
+              </label>
 
               <div className="space-y-2">
                 <span className="text-xs font-medium uppercase tracking-wider text-zinc-400">
@@ -324,84 +205,17 @@ export function WhitelistForm() {
                 {xError ? <p className="text-sm text-neon-pink">{xError}</p> : null}
               </div>
 
-              {xUser ? (
-                <div className="space-y-3 rounded border border-white/10 bg-black/30 p-3">
-                  <p className="text-[11px] uppercase tracking-wider text-zinc-500">
-                    {whitelist.checklistHint}
-                  </p>
-                  {!tweetConfigured ? (
-                    <p className="text-[11px] text-amber-300/90">
-                      Target tweet ID is empty in content/site.ts — like/retweet checks will fail until set.
-                    </p>
-                  ) : null}
-                  <ul className="space-y-2">
-                    {checklist.map((item) => {
-                      const state = verify[item.key];
-                      return (
-                        <li
-                          key={item.key}
-                          className="flex flex-wrap items-center justify-between gap-2 rounded border border-white/5 px-2 py-2"
-                        >
-                          <div className="min-w-0 flex-1">
-                            {item.href ? (
-                              <a
-                                href={item.href}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-sm text-zinc-200 underline-offset-2 hover:text-neon-pink hover:underline"
-                                onClick={playClick}
-                              >
-                                {item.label}
-                              </a>
-                            ) : (
-                              <span className="text-sm text-zinc-200">{item.label}</span>
-                            )}
-                            {state.detail ? (
-                              <p
-                                className={`mt-0.5 text-[11px] ${
-                                  state.status === "ok" ? "text-neon-cyan" : "text-zinc-500"
-                                }`}
-                              >
-                                {state.detail}
-                              </p>
-                            ) : null}
-                          </div>
-                          <button
-                            type="button"
-                            disabled={state.status === "loading"}
-                            className={`shrink-0 px-3 py-1 text-[11px] uppercase tracking-wider ${
-                              state.status === "ok"
-                                ? "text-neon-cyan"
-                                : "neon-btn-secondary disabled:opacity-40"
-                            }`}
-                            onClick={() => runVerify(item.key)}
-                            onMouseEnter={playHover}
-                          >
-                            {state.status === "loading"
-                              ? whitelist.verifyingCta
-                              : state.status === "ok"
-                                ? whitelist.verifiedOk
-                                : whitelist.verifyCta}
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              ) : null}
-
               <label className="block space-y-2">
                 <span className="text-xs font-medium uppercase tracking-wider text-zinc-400">
                   {whitelist.fields.reason.label}
                 </span>
                 <textarea
                   required
-                  disabled={!isConnected}
                   name={whitelist.fields.reason.name}
                   value={values.reason}
                   onChange={(e) => onChange("reason", e.target.value)}
                   placeholder={whitelist.fields.reason.placeholder}
-                  className="neon-input min-h-[96px] resize-y disabled:opacity-40"
+                  className="neon-input min-h-[96px] resize-y"
                   maxLength={280}
                 />
               </label>
@@ -411,19 +225,16 @@ export function WhitelistForm() {
                   {whitelist.fields.referral.label}
                 </span>
                 <input
-                  disabled={!isConnected}
                   name={whitelist.fields.referral.name}
                   value={values.referral}
                   onChange={(e) => onChange("referral", e.target.value)}
                   placeholder={whitelist.fields.referral.placeholder}
-                  className="neon-input disabled:opacity-40"
+                  className="neon-input"
                 />
               </label>
 
               {errorMsg ? <p className="text-sm text-neon-pink">{errorMsg}</p> : null}
-              {!isConnected ? (
-                <p className="text-center text-xs text-zinc-500">{whitelist.connectPrompt}</p>
-              ) : !canSubmit ? (
+              {!canSubmit && status !== "submitting" ? (
                 <p className="text-center text-xs text-zinc-500">{whitelist.submitBlocked}</p>
               ) : null}
 
