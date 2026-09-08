@@ -1,7 +1,7 @@
 import { Hero } from "@/components/Hero";
 import { Lore } from "@/components/Lore";
 import { WhitelistForm } from "@/components/WhitelistForm";
-import { Roadmap } from "@/components/Roadmap";
+import { Teaser } from "@/components/Teaser";
 
 export default function HomePage() {
   return (
@@ -9,7 +9,7 @@ export default function HomePage() {
       <Hero />
       <Lore />
       <WhitelistForm />
-      <Roadmap />
+      <Teaser />
     </div>
   );
 }
