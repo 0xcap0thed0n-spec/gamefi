@@ -144,10 +144,29 @@ async function xGet(path: string, accessToken: string) {
   return { ok: res.ok, status: res.status, json };
 }
 
+function xErrorDetail(json: Record<string, unknown>, status: number): string {
+  const title = typeof json.title === "string" ? json.title : "";
+  const detail = typeof json.detail === "string" ? json.detail : "";
+  const type = typeof json.type === "string" ? json.type : "";
+  const errors = Array.isArray(json.errors) ? json.errors : [];
+  const first =
+    errors[0] && typeof errors[0] === "object" && errors[0] !== null
+      ? (errors[0] as Record<string, unknown>)
+      : null;
+  const msg =
+    (typeof first?.message === "string" && first.message) ||
+    detail ||
+    title ||
+    (typeof json.error === "string" ? json.error : "") ||
+    type ||
+    `HTTP ${status}`;
+  return msg.slice(0, 160);
+}
+
 export async function fetchMe(accessToken: string): Promise<TwitterUser> {
-  const { ok, json } = await xGet("/users/me?user.fields=name,username", accessToken);
+  const { ok, status, json } = await xGet("/users/me?user.fields=name,username", accessToken);
   if (!ok) {
-    throw new Error("Could not load X profile.");
+    throw new Error(`Could not load X profile (${status}): ${xErrorDetail(json, status)}`);
   }
   const data = json.data as { id: string; username: string; name: string } | undefined;
   if (!data?.id || !data.username) {
