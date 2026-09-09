@@ -3,7 +3,7 @@ import { site } from "@/content/site";
 
 /** Required X API OAuth 2.0 scopes (configure at developer.x.com). */
 export const TWITTER_SCOPES =
-  "tweet.read users.read follows.read like.read offline.access";
+  "tweet.read users.read offline.access";
 
 export const TWITTER_PKCE_COOKIE = "nf_tw_pkce";
 export const TWITTER_SESSION_COOKIE = "nf_tw_session";
@@ -197,7 +197,6 @@ export async function verifyFollow(
   if (!targetId) {
     return { verified: false, detail: `Could not resolve @${targetUsername.replace(/^@/, "")}` };
   }
-  // Relationship lookup (source follows target?)
   const { ok, json, status } = await xGet(
     `/users/${sourceUserId}/following/${targetId}`,
     accessToken,
@@ -212,7 +211,6 @@ export async function verifyFollow(
         : `Not following @${targetUsername.replace(/^@/, "")} yet`,
     };
   }
-  // Fallback: scan following list if relationship endpoint unavailable
   if (status === 404 || status === 403) {
     const found = await userInPaginatedList(
       `/users/${sourceUserId}/following?max_results=1000`,
@@ -245,7 +243,6 @@ export async function verifyLike(
   );
   if (inLikingUsers) return { verified: true, detail: "Liked the target tweet" };
 
-  // Fallback: scan the user's liked_tweets (returns tweets, not users)
   let path: string | null = `/users/${userId}/liked_tweets?max_results=100`;
   let pages = 0;
   while (path && pages < 5) {
