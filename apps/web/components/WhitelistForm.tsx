@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { site } from "@/content/site";
 import { useAudio } from "./AudioProvider";
 
@@ -12,12 +12,28 @@ type FormState = {
 
 type XUser = { id: string; username: string; name: string };
 
+type SocialAction = "follow" | "retweet" | "like";
+
+type TaskState = {
+  verified: boolean;
+  detail: string;
+  busy: boolean;
+  opened: boolean;
+};
+
 const empty: FormState = { wallet: "", reason: "", referral: "" };
 
 const WALLET_RE = /^0x[a-fA-F0-9]{40}$/;
 
+const emptyTask = (): TaskState => ({
+  verified: false,
+  detail: "",
+  busy: false,
+  opened: false,
+});
+
 export function WhitelistForm() {
-  const { whitelist, assets } = site;
+  const { whitelist, assets, twitter } = site;
   const { playClick, playHover } = useAudio();
 
   const [values, setValues] = useState<FormState>(empty);
@@ -29,9 +45,55 @@ export function WhitelistForm() {
   const [xConfigured, setXConfigured] = useState(true);
   const [xError, setXError] = useState("");
 
+  const [tasks, setTasks] = useState<Record<SocialAction, TaskState>>({
+    follow: emptyTask(),
+    retweet: emptyTask(),
+    like: emptyTask(),
+  });
+
+  const targetUsername = twitter.targetUsername.replace(/^@/, "");
+  const targetTweetId = twitter.targetTweetId.trim();
+  const followReady = Boolean(targetUsername);
+  const tweetReady = Boolean(targetTweetId);
+  const socialLive = followReady || tweetReady;
+
   const walletOk = WALLET_RE.test(values.wallet.trim());
   const canSubmit =
     walletOk && !!xUser && values.reason.trim().length > 0 && status !== "submitting";
+
+  const socialRows = useMemo(
+    () =>
+      [
+        {
+          action: "follow" as const,
+          label: whitelist.social.followLabel,
+          ready: followReady,
+          openHref: followReady
+            ? `https://x.com/intent/follow?screen_name=${encodeURIComponent(targetUsername)}`
+            : null,
+          hint: followReady ? `@${targetUsername}` : "@…",
+        },
+        {
+          action: "retweet" as const,
+          label: whitelist.social.retweetLabel,
+          ready: tweetReady,
+          openHref: tweetReady
+            ? `https://x.com/intent/retweet?tweet_id=${encodeURIComponent(targetTweetId)}`
+            : null,
+          hint: "post",
+        },
+        {
+          action: "like" as const,
+          label: whitelist.social.likeLabel,
+          ready: tweetReady,
+          openHref: tweetReady
+            ? `https://x.com/intent/like?tweet_id=${encodeURIComponent(targetTweetId)}`
+            : null,
+          hint: "post",
+        },
+      ] as const,
+    [followReady, targetTweetId, targetUsername, tweetReady, whitelist.social],
+  );
 
   const refreshMe = useCallback(async () => {
     setXLoading(true);
@@ -79,6 +141,56 @@ export function WhitelistForm() {
     setValues((prev) => ({ ...prev, [key]: value }));
   }
 
+  function markOpened(action: SocialAction) {
+    playClick();
+    setTasks((prev) => ({ ...prev, [action]: { ...prev[action], opened: true } }));
+  }
+
+  async function verifyAction(action: SocialAction) {
+    if (!xUser) {
+      setXError(whitelist.social.needConnect);
+      return;
+    }
+    playClick();
+    setTasks((prev) => ({
+      ...prev,
+      [action]: { ...prev[action], busy: true, detail: "" },
+    }));
+    try {
+      const res = await fetch("/api/twitter/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ action }),
+      });
+      const payload = await res.json().catch(() => ({}));
+      const detail =
+        (typeof payload.detail === "string" && payload.detail) ||
+        (typeof payload.error === "string" && payload.error) ||
+        (res.ok ? "Done" : "Verification failed");
+      const verified = Boolean(payload.verified);
+      setTasks((prev) => ({
+        ...prev,
+        [action]: {
+          ...prev[action],
+          busy: false,
+          verified,
+          detail,
+        },
+      }));
+    } catch (err) {
+      setTasks((prev) => ({
+        ...prev,
+        [action]: {
+          ...prev[action],
+          busy: false,
+          verified: false,
+          detail: err instanceof Error ? err.message : "Verification failed",
+        },
+      }));
+    }
+  }
+
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     if (!walletOk || !xUser || !values.reason.trim()) return;
@@ -117,6 +229,11 @@ export function WhitelistForm() {
     setValues(empty);
     setStatus("idle");
     setErrorMsg("");
+    setTasks({
+      follow: emptyTask(),
+      retweet: emptyTask(),
+      like: emptyTask(),
+    });
   }
 
   return (
@@ -203,6 +320,88 @@ export function WhitelistForm() {
                   </a>
                 )}
                 {xError ? <p className="text-sm text-neon-pink">{xError}</p> : null}
+              </div>
+
+              <div className="space-y-3 rounded border border-neon-cyan/20 bg-black/30 p-3 sm:p-4">
+                <div>
+                  <p className="font-pixel text-[9px] uppercase tracking-[0.28em] text-neon-cyan">
+                    {whitelist.social.eyebrow}
+                  </p>
+                  <p className="mt-1 text-sm font-medium text-white">{whitelist.social.title}</p>
+                  <p className="mt-1 text-[11px] text-zinc-500">{whitelist.social.subtitle}</p>
+                </div>
+
+                {!socialLive ? (
+                  <p className="rounded border border-zinc-700/60 bg-zinc-900/50 px-3 py-2 text-[11px] leading-relaxed text-zinc-400">
+                    {whitelist.social.comingSoon}
+                  </p>
+                ) : null}
+
+                <ul className="space-y-2">
+                  {socialRows.map((row) => {
+                    const state = tasks[row.action];
+                    const canVerify = Boolean(xUser) && row.ready && !state.busy;
+                    return (
+                      <li
+                        key={row.action}
+                        className="rounded border border-zinc-700/50 bg-zinc-950/40 px-3 py-2.5"
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-200">
+                              {row.label}{" "}
+                              <span className="font-mono font-normal normal-case tracking-normal text-neon-cyan">
+                                {row.hint}
+                              </span>
+                            </p>
+                            {state.verified ? (
+                              <p className="mt-0.5 text-[10px] uppercase tracking-wider text-neon-cyan">
+                                {whitelist.social.verifiedBadge}
+                              </p>
+                            ) : state.detail ? (
+                              <p className="mt-0.5 text-[11px] text-neon-pink">{state.detail}</p>
+                            ) : null}
+                          </div>
+                          <div className="flex shrink-0 items-center gap-2">
+                            {row.openHref ? (
+                              <a
+                                href={row.openHref}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="neon-btn-secondary px-3 py-1.5 text-[11px]"
+                                onClick={() => markOpened(row.action)}
+                                onMouseEnter={playHover}
+                              >
+                                {whitelist.social.openCta}
+                              </a>
+                            ) : (
+                              <button
+                                type="button"
+                                disabled
+                                className="neon-btn-secondary px-3 py-1.5 text-[11px] opacity-40"
+                              >
+                                {whitelist.social.openCta}
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              disabled={!canVerify || state.verified}
+                              className="neon-btn px-3 py-1.5 text-[11px] disabled:cursor-not-allowed disabled:opacity-40"
+                              onClick={() => void verifyAction(row.action)}
+                              onMouseEnter={playHover}
+                            >
+                              {state.busy
+                                ? whitelist.social.verifyingCta
+                                : state.verified
+                                  ? whitelist.social.verifiedBadge
+                                  : whitelist.social.verifyCta}
+                            </button>
+                          </div>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
               </div>
 
               <label className="block space-y-2">
