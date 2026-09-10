@@ -3,7 +3,7 @@ import { site } from "@/content/site";
 
 /** Required X API OAuth 2.0 scopes (configure at developer.x.com). */
 export const TWITTER_SCOPES =
-  "tweet.read users.read offline.access";
+  "tweet.read users.read follows.read like.read offline.access";
 
 export const TWITTER_PKCE_COOKIE = "nf_tw_pkce";
 export const TWITTER_SESSION_COOKIE = "nf_tw_session";
@@ -177,6 +177,7 @@ export async function fetchMe(accessToken: string): Promise<TwitterUser> {
 
 export async function resolveUsername(username: string, accessToken: string): Promise<string | null> {
   const clean = username.replace(/^@/, "");
+  if (!clean) return null;
   const { ok, json } = await xGet(`/users/by/username/${encodeURIComponent(clean)}`, accessToken);
   if (!ok) return null;
   const data = json.data as { id?: string } | undefined;
@@ -212,9 +213,13 @@ export async function verifyFollow(
   sourceUserId: string,
   targetUsername: string,
 ): Promise<{ verified: boolean; detail: string }> {
-  const targetId = await resolveUsername(targetUsername, accessToken);
+  const clean = targetUsername.replace(/^@/, "");
+  if (!clean) {
+    return { verified: false, detail: "Target @username not configured in content/site.ts" };
+  }
+  const targetId = await resolveUsername(clean, accessToken);
   if (!targetId) {
-    return { verified: false, detail: `Could not resolve @${targetUsername.replace(/^@/, "")}` };
+    return { verified: false, detail: `Could not resolve @${clean}` };
   }
   const { ok, json, status } = await xGet(
     `/users/${sourceUserId}/following/${targetId}`,
@@ -225,9 +230,7 @@ export async function verifyFollow(
     const following = Boolean(data?.following);
     return {
       verified: following,
-      detail: following
-        ? `Following @${targetUsername.replace(/^@/, "")}`
-        : `Not following @${targetUsername.replace(/^@/, "")} yet`,
+      detail: following ? `Following @${clean}` : `Not following @${clean} yet`,
     };
   }
   if (status === 404 || status === 403) {
@@ -238,9 +241,7 @@ export async function verifyFollow(
     );
     return {
       verified: found,
-      detail: found
-        ? `Following @${targetUsername.replace(/^@/, "")}`
-        : `Not following @${targetUsername.replace(/^@/, "")} yet`,
+      detail: found ? `Following @${clean}` : `Not following @${clean} yet`,
     };
   }
   const title = (json.title as string) || (json.detail as string) || "Follow check failed";
