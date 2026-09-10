@@ -31,15 +31,14 @@ export const site = {
   },
 
   /**
-   * X / Twitter OAuth targets (optional — plug in later for follow/like/retweet checks).
-   * Connect-only flow does not require these today.
+   * X / Twitter OAuth targets for follow / like / retweet checks.
+   * Leave empty until project @ + announcement tweet exist — UI shows placeholders.
    * OAuth secrets live in env: TWITTER_CLIENT_ID, TWITTER_CLIENT_SECRET (optional),
    * TWITTER_CALLBACK_URL, TWITTER_SESSION_SECRET (optional).
    */
   twitter: {
-    // Plug in later when enabling follow/like/retweet verification:
     targetUsername: "", // e.g. "NightfallCity" (no @)
-    targetTweetId: "", // e.g. announcement tweet ID
+    targetTweetId: "", // numeric status id from the tweet URL
   },
 
   whitelist: {
@@ -77,6 +76,21 @@ export const site = {
     reconnectXCta: "Reconnect X",
     xConnectedBadge: "Connected",
     xNotConfigured: "Twitter not configured — add keys in .env.local (see .env.example).",
+    social: {
+      eyebrow: "SIGNAL // TASKS",
+      title: "Boost the frequency",
+      subtitle: "Open each action, complete it on X, then hit Verify — same flow as the best allowlists.",
+      comingSoon:
+        "Project X + announcement tweet go live after art is locked. Open / Verify light up here when targets are set.",
+      followLabel: "Follow",
+      likeLabel: "Like",
+      retweetLabel: "Retweet",
+      openCta: "Open",
+      verifyCta: "Verify",
+      verifyingCta: "Checking…",
+      verifiedBadge: "Verified",
+      needConnect: "Connect X first to verify these.",
+    },
     submit: "Transmit Signal",
     submitting: "Transmitting...",
     submitBlocked: "Paste a valid wallet, connect X, and add a reason to submit.",
