@@ -13,7 +13,8 @@ export const site = {
   pressStart: {
     eyebrow: "NIGHTFALL CITY",
     title: "PRESS START",
-    hint: "CLICK · TAP · ENTER",
+    loadingLabel: "TUNING FREQUENCY",
+    loadingSub: "SIGNAL LOCK…",
   },
 
   hero: {

@@ -69,12 +69,18 @@ body {
 
 /* —— Press Start gate —— */
 .press-start-gate {
-  animation: press-start-in 0.35s ease-out both;
+  animation: press-start-in 0.45s ease-out both;
 }
 
 .press-start-gate--out {
-  animation: press-start-out 0.4s ease-in both;
+  animation: press-start-out 0.9s ease-in both;
   pointer-events: none;
+}
+
+.press-start-gate--loading .press-start-tear,
+.press-start-gate--loading .press-start-rgb {
+  animation-duration: 0.35s;
+  opacity: 0.85;
 }
 
 .press-start-veil {
@@ -88,7 +94,7 @@ body {
 .press-start-scan {
   position: absolute;
   inset: 0;
-  opacity: 0.18;
+  opacity: 0.2;
   background: repeating-linear-gradient(
     to bottom,
     transparent 0,
@@ -96,11 +102,112 @@ body {
     rgba(0, 0, 0, 0.55) 2px,
     rgba(0, 0, 0, 0.55) 3px
   );
-  animation: press-start-flicker 4s steps(2, end) infinite;
+  animation: press-start-flicker 3.2s steps(2, end) infinite;
+}
+
+.press-start-noise {
+  position: absolute;
+  inset: -10%;
+  opacity: 0.07;
+  mix-blend-mode: screen;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain-shift 0.28s steps(2) infinite;
+}
+
+.press-start-tear {
+  position: absolute;
+  left: -5%;
+  width: 110%;
+  height: 18px;
+  opacity: 0;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 245, 255, 0.35),
+    rgba(255, 45, 149, 0.45),
+    transparent
+  );
+  box-shadow: 0 0 12px rgba(0, 245, 255, 0.35);
+}
+
+.press-start-tear--a {
+  top: 28%;
+  animation: press-start-tear-a 5.5s steps(1, end) infinite;
+}
+
+.press-start-tear--b {
+  top: 62%;
+  height: 10px;
+  animation: press-start-tear-b 7.2s steps(1, end) infinite;
+}
+
+.press-start-rgb {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.22;
+  background:
+    linear-gradient(90deg, rgba(255, 45, 149, 0.08), transparent 40%, rgba(0, 245, 255, 0.08));
+  mix-blend-mode: color-dodge;
+  animation: press-start-rgb-shift 2.8s ease-in-out infinite alternate;
 }
 
 .press-start-blink {
   animation: press-start-blink 1.05s steps(1, end) infinite;
+}
+
+.press-start-title-glitch {
+  position: relative;
+  text-shadow:
+    0 0 18px rgba(255, 45, 149, 0.75),
+    0 0 36px rgba(0, 245, 255, 0.35),
+    -2px 0 rgba(0, 245, 255, 0.55),
+    2px 0 rgba(255, 45, 149, 0.55);
+}
+
+.press-start-title-glitch::before,
+.press-start-title-glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.press-start-title-glitch::before {
+  color: #00f5ff;
+  transform: translate(-3px, 1px);
+  clip-path: inset(0 0 58% 0);
+  opacity: 0.7;
+  animation: press-start-chroma 2.4s steps(2, end) infinite;
+}
+
+.press-start-title-glitch::after {
+  color: #ff2d95;
+  transform: translate(3px, -1px);
+  clip-path: inset(42% 0 0 0);
+  opacity: 0.7;
+  animation: press-start-chroma 3.1s steps(2, end) infinite reverse;
+}
+
+.press-start-bar {
+  height: 10px;
+  border: 1px solid rgba(0, 245, 255, 0.45);
+  background: rgba(5, 4, 10, 0.85);
+  box-shadow:
+    0 0 12px rgba(0, 245, 255, 0.25),
+    inset 0 0 8px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.press-start-bar__fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #ff2d95, #00f5ff);
+  box-shadow: 0 0 14px rgba(0, 245, 255, 0.55);
+  animation: press-start-load 2.4s cubic-bezier(0.4, 0.05, 0.2, 1) forwards;
 }
 
 @keyframes press-start-blink {
@@ -116,15 +223,105 @@ body {
 
 @keyframes press-start-flicker {
   0%,
-  92%,
+  90%,
   100% {
-    opacity: 0.18;
+    opacity: 0.2;
+  }
+  91% {
+    opacity: 0.06;
+  }
+  92% {
+    opacity: 0.28;
   }
   93% {
-    opacity: 0.08;
+    opacity: 0.1;
   }
-  94% {
-    opacity: 0.22;
+}
+
+@keyframes press-start-tear-a {
+  0%,
+  78%,
+  100% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+  79% {
+    opacity: 0.9;
+    transform: translateX(-12px);
+  }
+  81% {
+    opacity: 0.5;
+    transform: translateX(18px);
+  }
+  83% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+}
+
+@keyframes press-start-tear-b {
+  0%,
+  55%,
+  100% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+  56% {
+    opacity: 0.75;
+    transform: translateX(20px);
+  }
+  58% {
+    opacity: 0.35;
+    transform: translateX(-16px);
+  }
+  60% {
+    opacity: 0;
+  }
+}
+
+@keyframes press-start-rgb-shift {
+  from {
+    transform: translateX(-6px);
+    filter: hue-rotate(-8deg);
+  }
+  to {
+    transform: translateX(6px);
+    filter: hue-rotate(8deg);
+  }
+}
+
+@keyframes press-start-chroma {
+  0%,
+  86%,
+  100% {
+    transform: translate(0, 0);
+  }
+  87% {
+    transform: translate(-4px, 1px);
+  }
+  89% {
+    transform: translate(5px, -2px);
+  }
+}
+
+@keyframes press-start-load {
+  0% {
+    width: 0%;
+  }
+  15% {
+    width: 18%;
+  }
+  40% {
+    width: 42%;
+  }
+  55% {
+    width: 48%;
+  }
+  78% {
+    width: 88%;
+  }
+  100% {
+    width: 100%;
   }
 }
 
@@ -140,9 +337,15 @@ body {
 @keyframes press-start-out {
   from {
     opacity: 1;
+    filter: contrast(1.1) saturate(1.2);
+  }
+  40% {
+    opacity: 0.85;
+    filter: contrast(1.4) saturate(1.6) brightness(1.15);
   }
   to {
     opacity: 0;
+    filter: contrast(1) brightness(0.6);
   }
 }
 
@@ -331,12 +534,21 @@ body {
   .road-grid,
   .vhs-grain,
   .press-start-blink,
-  .press-start-scan {
+  .press-start-scan,
+  .press-start-noise,
+  .press-start-tear,
+  .press-start-rgb,
+  .press-start-title-glitch::before,
+  .press-start-title-glitch::after {
     animation: none !important;
   }
 
   .press-start-blink {
     opacity: 1 !important;
+  }
+
+  .press-start-bar__fill {
+    animation-duration: 0.01ms !important;
   }
 
   html {
