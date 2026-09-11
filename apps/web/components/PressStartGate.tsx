@@ -13,12 +13,22 @@ const FADE_MS = 900;
 
 type Phase = "idle" | "loading" | "out";
 
+/** Match the stepped CSS bar curve roughly for the % readout. */
+function loadEase(t: number): number {
+  if (t < 0.15) return (t / 0.15) * 18;
+  if (t < 0.4) return 18 + ((t - 0.15) / 0.25) * 24;
+  if (t < 0.55) return 42 + ((t - 0.4) / 0.15) * 6;
+  if (t < 0.78) return 48 + ((t - 0.55) / 0.23) * 40;
+  return 88 + ((t - 0.78) / 0.22) * 12;
+}
+
 export function PressStartGate() {
   const { pressStart } = site;
   const { playClick } = useAudio();
   const [hydrated, setHydrated] = useState(false);
   const [open, setOpen] = useState(false);
   const [phase, setPhase] = useState<Phase>("idle");
+  const [percent, setPercent] = useState(0);
 
   useEffect(() => {
     try {
@@ -33,6 +43,7 @@ export function PressStartGate() {
   const beginBoot = useCallback(() => {
     if (phase !== "idle") return;
     playClick();
+    setPercent(0);
     setPhase("loading");
     try {
       sessionStorage.setItem(STORAGE_KEY, "1");
@@ -43,8 +54,20 @@ export function PressStartGate() {
 
   useEffect(() => {
     if (phase !== "loading") return;
+    const started = performance.now();
+    let raf = 0;
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - started) / LOAD_MS);
+      setPercent(Math.min(100, Math.round(loadEase(t))));
+      if (t < 1) raf = window.requestAnimationFrame(tick);
+      else setPercent(100);
+    };
+    raf = window.requestAnimationFrame(tick);
     const toOut = window.setTimeout(() => setPhase("out"), LOAD_MS);
-    return () => window.clearTimeout(toOut);
+    return () => {
+      window.cancelAnimationFrame(raf);
+      window.clearTimeout(toOut);
+    };
   }, [phase]);
 
   useEffect(() => {
@@ -52,6 +75,7 @@ export function PressStartGate() {
     const done = window.setTimeout(() => {
       setOpen(false);
       setPhase("idle");
+      setPercent(0);
     }, FADE_MS);
     return () => window.clearTimeout(done);
   }, [phase]);
@@ -116,14 +140,20 @@ export function PressStartGate() {
             <p className="font-pixel text-[8px] uppercase tracking-[0.3em] text-neon-cyan sm:text-[9px]">
               {pressStart.loadingLabel}
             </p>
-            <div
-              className="press-start-bar mt-8 w-full max-w-xs"
-              role="progressbar"
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-label={pressStart.loadingLabel}
-            >
-              <div className="press-start-bar__fill" />
+            <div className="mt-8 flex w-full max-w-xs items-center gap-3">
+              <div
+                className="press-start-bar min-w-0 flex-1"
+                role="progressbar"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={percent}
+                aria-label={pressStart.loadingLabel}
+              >
+                <div className="press-start-bar__fill" />
+              </div>
+              <span className="shrink-0 font-pixel text-[9px] tabular-nums text-neon-pink sm:text-[10px]">
+                {percent}%
+              </span>
             </div>
             <p className="mt-4 font-pixel text-[7px] uppercase tracking-[0.25em] text-zinc-500">
               {pressStart.loadingSub}
