@@ -4,6 +4,7 @@ import { AudioProvider } from "@/components/AudioProvider";
 import { ScanlineOverlay } from "@/components/ScanlineOverlay";
 import { FixedBackground } from "@/components/FixedBackground";
 import { Footer } from "@/components/Footer";
+import { PressStartGate } from "@/components/PressStartGate";
 import { site } from "@/content/site";
 import "./globals.css";
 
@@ -42,6 +43,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
         <AudioProvider>
           <FixedBackground />
           <ScanlineOverlay />
+          <PressStartGate />
           <main className="relative z-10 flex-1">{props.children}</main>
           <Footer />
         </AudioProvider>

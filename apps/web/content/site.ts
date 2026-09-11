@@ -10,6 +10,12 @@ export const site = {
   description:
     "Nightfall City — an 80s retro cyberpunk NFT project. Synthwave nights, hot neon, and a whitelist for those who hear the frequency.",
 
+  pressStart: {
+    eyebrow: "NIGHTFALL CITY",
+    title: "PRESS START",
+    hint: "CLICK · TAP · ENTER",
+  },
+
   hero: {
     badge: "SIGNAL LIVE · WHITELIST OPEN",
     ctaPrimary: "Enter the Frequency",
