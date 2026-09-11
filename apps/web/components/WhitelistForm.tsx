@@ -248,18 +248,22 @@ export function WhitelistForm() {
         }}
       >
         <div className="relative z-10">
-          <p className="font-pixel text-[10px] uppercase tracking-[0.3em] text-neon-cyan">
+          <p className="text-[8px] uppercase tracking-[0.3em] text-neon-cyan">
             {whitelist.eyebrow}
           </p>
-          <h2 className="mt-3 font-display text-2xl font-semibold tracking-wide text-white sm:text-3xl">
+          <h2 className="mt-4 text-sm uppercase tracking-wide text-white sm:text-base">
             {whitelist.title}
           </h2>
-          <p className="mt-3 text-sm text-zinc-400">{whitelist.subtitle}</p>
+          <p className="mt-3 text-[8px] leading-relaxed text-zinc-400 sm:text-[9px]">
+            {whitelist.subtitle}
+          </p>
 
           {status === "success" ? (
             <div className="mt-8 space-y-4 text-center">
-              <p className="font-display text-xl text-neon-pink">{whitelist.successTitle}</p>
-              <p className="text-sm text-zinc-300">{whitelist.successBody}</p>
+              <p className="text-sm text-neon-pink">{whitelist.successTitle}</p>
+              <p className="text-[8px] leading-relaxed text-zinc-300 sm:text-[9px]">
+                {whitelist.successBody}
+              </p>
               <button
                 type="button"
                 className="neon-btn-secondary mt-2"
@@ -272,7 +276,7 @@ export function WhitelistForm() {
           ) : (
             <form className="mt-8 space-y-5" onSubmit={onSubmit}>
               <label className="block space-y-2">
-                <span className="text-xs font-medium uppercase tracking-wider text-zinc-400">
+                <span className="text-[8px] uppercase tracking-wider text-zinc-400">
                   {whitelist.fields.wallet.label}
                 </span>
                 <input
@@ -281,31 +285,31 @@ export function WhitelistForm() {
                   value={values.wallet}
                   onChange={(e) => onChange("wallet", e.target.value)}
                   placeholder={whitelist.fields.wallet.placeholder}
-                  className="neon-input font-mono text-sm"
+                  className="neon-input"
                   autoComplete="off"
                   spellCheck={false}
                 />
                 {values.wallet && !walletOk ? (
-                  <p className="text-[11px] text-neon-pink">{whitelist.walletInvalid}</p>
+                  <p className="text-[8px] text-neon-pink">{whitelist.walletInvalid}</p>
                 ) : (
-                  <p className="text-[11px] text-zinc-500">{whitelist.walletHint}</p>
+                  <p className="text-[7px] leading-relaxed text-zinc-500">{whitelist.walletHint}</p>
                 )}
               </label>
 
               <div className="space-y-2">
-                <span className="text-xs font-medium uppercase tracking-wider text-zinc-400">
+                <span className="text-[8px] uppercase tracking-wider text-zinc-400">
                   {whitelist.fields.twitter.label}
                 </span>
                 {!xConfigured ? (
-                  <p className="rounded border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+                  <p className="rounded-sm border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[8px] text-amber-200">
                     {whitelist.xNotConfigured}
                   </p>
                 ) : xLoading ? (
-                  <div className="neon-input text-sm text-zinc-500">Checking X session...</div>
+                  <div className="neon-input text-zinc-500">Checking X session...</div>
                 ) : xUser ? (
-                  <div className="neon-input flex w-full items-center justify-between gap-3 text-sm">
-                    <span className="font-mono text-neon-cyan">@{xUser.username}</span>
-                    <span className="text-[10px] uppercase tracking-wider text-neon-cyan">
+                  <div className="neon-input flex w-full items-center justify-between gap-3">
+                    <span className="text-neon-cyan">@{xUser.username}</span>
+                    <span className="text-[7px] uppercase tracking-wider text-neon-cyan">
                       {whitelist.xConnectedBadge}
                     </span>
                   </div>
@@ -319,20 +323,22 @@ export function WhitelistForm() {
                     {whitelist.connectXCta}
                   </a>
                 )}
-                {xError ? <p className="text-sm text-neon-pink">{xError}</p> : null}
+                {xError ? <p className="text-[8px] text-neon-pink">{xError}</p> : null}
               </div>
 
-              <div className="space-y-3 rounded border border-neon-cyan/20 bg-black/30 p-3 sm:p-4">
+              <div className="space-y-3 rounded-sm border border-neon-cyan/20 bg-black/30 p-3 sm:p-4">
                 <div>
-                  <p className="font-pixel text-[9px] uppercase tracking-[0.28em] text-neon-cyan">
+                  <p className="text-[7px] uppercase tracking-[0.28em] text-neon-cyan">
                     {whitelist.social.eyebrow}
                   </p>
-                  <p className="mt-1 text-sm font-medium text-white">{whitelist.social.title}</p>
-                  <p className="mt-1 text-[11px] text-zinc-500">{whitelist.social.subtitle}</p>
+                  <p className="mt-2 text-[9px] uppercase text-white">{whitelist.social.title}</p>
+                  <p className="mt-2 text-[7px] leading-relaxed text-zinc-500">
+                    {whitelist.social.subtitle}
+                  </p>
                 </div>
 
                 {!socialLive ? (
-                  <p className="rounded border border-zinc-700/60 bg-zinc-900/50 px-3 py-2 text-[11px] leading-relaxed text-zinc-400">
+                  <p className="rounded-sm border border-zinc-700/60 bg-zinc-900/50 px-3 py-2 text-[7px] leading-relaxed text-zinc-400">
                     {whitelist.social.comingSoon}
                   </p>
                 ) : null}
@@ -344,22 +350,22 @@ export function WhitelistForm() {
                     return (
                       <li
                         key={row.action}
-                        className="rounded border border-zinc-700/50 bg-zinc-950/40 px-3 py-2.5"
+                        className="rounded-sm border border-zinc-700/50 bg-zinc-950/40 px-3 py-2.5"
                       >
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <div className="min-w-0">
-                            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-200">
+                            <p className="text-[8px] uppercase tracking-wider text-zinc-200">
                               {row.label}{" "}
-                              <span className="font-mono font-normal normal-case tracking-normal text-neon-cyan">
+                              <span className="normal-case tracking-normal text-neon-cyan">
                                 {row.hint}
                               </span>
                             </p>
                             {state.verified ? (
-                              <p className="mt-0.5 text-[10px] uppercase tracking-wider text-neon-cyan">
+                              <p className="mt-1 text-[7px] uppercase tracking-wider text-neon-cyan">
                                 {whitelist.social.verifiedBadge}
                               </p>
                             ) : state.detail ? (
-                              <p className="mt-0.5 text-[11px] text-neon-pink">{state.detail}</p>
+                              <p className="mt-1 text-[7px] text-neon-pink">{state.detail}</p>
                             ) : null}
                           </div>
                           <div className="flex shrink-0 items-center gap-2">
@@ -368,7 +374,7 @@ export function WhitelistForm() {
                                 href={row.openHref}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="neon-btn-secondary px-3 py-1.5 text-[11px]"
+                                className="neon-btn-secondary px-3 py-1.5 text-[7px]"
                                 onClick={() => markOpened(row.action)}
                                 onMouseEnter={playHover}
                               >
@@ -378,7 +384,7 @@ export function WhitelistForm() {
                               <button
                                 type="button"
                                 disabled
-                                className="neon-btn-secondary px-3 py-1.5 text-[11px] opacity-40"
+                                className="neon-btn-secondary px-3 py-1.5 text-[7px] opacity-40"
                               >
                                 {whitelist.social.openCta}
                               </button>
@@ -386,7 +392,7 @@ export function WhitelistForm() {
                             <button
                               type="button"
                               disabled={!canVerify || state.verified}
-                              className="neon-btn px-3 py-1.5 text-[11px] disabled:cursor-not-allowed disabled:opacity-40"
+                              className="neon-btn px-3 py-1.5 text-[7px] disabled:cursor-not-allowed disabled:opacity-40"
                               onClick={() => void verifyAction(row.action)}
                               onMouseEnter={playHover}
                             >
@@ -405,7 +411,7 @@ export function WhitelistForm() {
               </div>
 
               <label className="block space-y-2">
-                <span className="text-xs font-medium uppercase tracking-wider text-zinc-400">
+                <span className="text-[8px] uppercase tracking-wider text-zinc-400">
                   {whitelist.fields.reason.label}
                 </span>
                 <textarea
@@ -420,7 +426,7 @@ export function WhitelistForm() {
               </label>
 
               <label className="block space-y-2">
-                <span className="text-xs font-medium uppercase tracking-wider text-zinc-400">
+                <span className="text-[8px] uppercase tracking-wider text-zinc-400">
                   {whitelist.fields.referral.label}
                 </span>
                 <input
@@ -432,9 +438,9 @@ export function WhitelistForm() {
                 />
               </label>
 
-              {errorMsg ? <p className="text-sm text-neon-pink">{errorMsg}</p> : null}
+              {errorMsg ? <p className="text-[8px] text-neon-pink">{errorMsg}</p> : null}
               {!canSubmit && status !== "submitting" ? (
-                <p className="text-center text-xs text-zinc-500">{whitelist.submitBlocked}</p>
+                <p className="text-center text-[7px] text-zinc-500">{whitelist.submitBlocked}</p>
               ) : null}
 
               <button
@@ -446,7 +452,7 @@ export function WhitelistForm() {
                 {status === "submitting" ? whitelist.submitting : whitelist.submit}
               </button>
 
-              <p className="text-center text-[11px] leading-relaxed text-zinc-600">
+              <p className="text-center text-[7px] leading-relaxed text-zinc-600">
                 {whitelist.privacyNote}
               </p>
             </form>

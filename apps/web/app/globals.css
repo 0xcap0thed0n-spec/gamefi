@@ -11,10 +11,16 @@ html {
 }
 
 body {
-  @apply bg-void-950 text-zinc-100 antialiased font-body;
+  @apply bg-void-950 text-zinc-100 font-pixel;
   min-height: 100vh;
   background-color: #05040a;
   background-image: none;
+  /* Crisp pixel glyphs — antialiasing softens Press Start 2P */
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: unset;
+  font-smooth: never;
+  line-height: 1.7;
+  font-size: 10px;
 }
 
 /* —— CRT / VHS overlays —— */
@@ -431,7 +437,6 @@ body {
 .neon-logo {
   background: transparent !important;
   box-shadow: none !important;
-  /* drop-shadow follows PNG alpha — box-shadow painted a fake rectangular slab */
   filter: drop-shadow(0 0 14px rgba(255, 45, 149, 0.55)) drop-shadow(0 0 28px rgba(0, 245, 255, 0.3));
 }
 
@@ -463,11 +468,11 @@ body {
 
 @layer components {
   .badge-neon {
-    @apply inline-flex items-center rounded-full border border-neon-pink/40 bg-neon-pink/10 px-3 py-1 font-pixel text-[8px] uppercase tracking-[0.2em] text-neon-pink sm:text-[9px];
+    @apply inline-flex items-center rounded-sm border border-neon-pink/40 bg-neon-pink/10 px-3 py-1 text-[7px] uppercase tracking-[0.2em] text-neon-pink sm:text-[8px];
   }
 
   .neon-card {
-    @apply rounded-2xl border border-neon-cyan/25 bg-void-900/85 shadow-glow backdrop-blur-md;
+    @apply rounded-sm border border-neon-cyan/25 bg-void-900/85 shadow-glow backdrop-blur-md;
     box-shadow:
       0 0 0 1px rgba(0, 245, 255, 0.08),
       0 0 40px rgba(0, 245, 255, 0.1),
@@ -483,7 +488,7 @@ body {
   }
 
   .neon-btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-neon-pink px-6 py-3 text-sm font-semibold uppercase tracking-wider text-void-950 transition duration-200;
+    @apply inline-flex items-center justify-center gap-2 rounded-sm bg-neon-pink px-5 py-3 text-[8px] uppercase tracking-wider text-void-950 transition duration-200 sm:text-[9px];
     box-shadow: 0 0 20px rgba(255, 45, 149, 0.45);
   }
 
@@ -505,7 +510,7 @@ body {
   }
 
   .neon-btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-neon-cyan/40 bg-void-900/60 px-6 py-3 text-sm font-semibold uppercase tracking-wider text-neon-cyan backdrop-blur transition duration-200;
+    @apply inline-flex items-center justify-center gap-2 rounded-sm border border-neon-cyan/40 bg-void-900/60 px-5 py-3 text-[8px] uppercase tracking-wider text-neon-cyan backdrop-blur transition duration-200 sm:text-[9px];
   }
 
   .neon-btn-secondary:hover {
@@ -519,7 +524,7 @@ body {
   }
 
   .neon-input {
-    @apply w-full rounded-xl border border-white/10 bg-void-950/80 px-4 py-3 text-sm text-zinc-100 placeholder:text-zinc-600 outline-none transition;
+    @apply w-full rounded-sm border border-white/10 bg-void-950/80 px-3 py-3 text-[8px] leading-relaxed text-zinc-100 placeholder:text-zinc-600 outline-none transition sm:text-[9px];
   }
 
   .neon-input:focus {
@@ -528,7 +533,6 @@ body {
   }
 }
 
-/* Reduce motion: tone down animations */
 @media (prefers-reduced-motion: reduce) {
   .glitch-title,
   .road-grid,
