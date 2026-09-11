@@ -15,7 +15,6 @@ body {
   min-height: 100vh;
   background-color: #05040a;
   background-image: none;
-  /* Crisp pixel glyphs — antialiasing softens Press Start 2P */
   -webkit-font-smoothing: none;
   -moz-osx-font-smoothing: unset;
   font-smooth: never;
@@ -23,7 +22,7 @@ body {
   font-size: 10px;
 }
 
-/* —— CRT / VHS overlays —— */
+/* —— CRT / VHS overlays (site-wide) —— */
 .scanlines {
   pointer-events: none;
   position: fixed;
@@ -44,7 +43,7 @@ body {
   position: fixed;
   inset: -20%;
   z-index: 49;
-  opacity: 0.045;
+  opacity: 0.05;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   animation: grain-shift 0.4s steps(2) infinite;
 }
@@ -59,6 +58,82 @@ body {
     transparent 50%,
     rgba(5, 4, 10, 0.65) 100%
   );
+}
+
+.site-crt-rgb {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 51;
+  opacity: 0.12;
+  mix-blend-mode: color-dodge;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 45, 149, 0.07),
+    transparent 42%,
+    rgba(0, 245, 255, 0.07)
+  );
+  animation: press-start-rgb-shift 4.5s ease-in-out infinite alternate;
+}
+
+.site-crt-tear {
+  pointer-events: none;
+  position: fixed;
+  left: -5%;
+  width: 110%;
+  z-index: 52;
+  height: 14px;
+  opacity: 0;
+  mix-blend-mode: screen;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 245, 255, 0.28),
+    rgba(255, 45, 149, 0.35),
+    transparent
+  );
+  box-shadow: 0 0 10px rgba(0, 245, 255, 0.25);
+}
+
+.site-crt-tear--a {
+  top: 22%;
+  animation: press-start-tear-a 9s steps(1, end) infinite;
+}
+
+.site-crt-tear--b {
+  top: 71%;
+  height: 8px;
+  animation: press-start-tear-b 11.5s steps(1, end) infinite;
+}
+
+.site-crt-flash {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 53;
+  opacity: 0;
+  background: rgba(255, 255, 255, 0.04);
+  animation: site-crt-flash 7.5s steps(1, end) infinite;
+}
+
+@keyframes site-crt-flash {
+  0%,
+  88%,
+  100% {
+    opacity: 0;
+  }
+  89% {
+    opacity: 0.08;
+  }
+  90% {
+    opacity: 0;
+  }
+  91% {
+    opacity: 0.05;
+  }
+  92% {
+    opacity: 0;
+  }
 }
 
 @keyframes grain-shift {
@@ -440,6 +515,49 @@ body {
   filter: drop-shadow(0 0 14px rgba(255, 45, 149, 0.55)) drop-shadow(0 0 28px rgba(0, 245, 255, 0.3));
 }
 
+/* Neon sign flicker + occasional RGB glitch on the logo */
+.neon-logo-flicker {
+  animation: neon-logo-flicker 6.5s steps(1, end) infinite;
+  transform-origin: center center;
+}
+
+@keyframes neon-logo-flicker {
+  0%,
+  86%,
+  100% {
+    opacity: 1;
+    filter: drop-shadow(0 0 14px rgba(255, 45, 149, 0.55))
+      drop-shadow(0 0 28px rgba(0, 245, 255, 0.3));
+    transform: translate(0, 0);
+  }
+  87% {
+    opacity: 0.35;
+    filter: drop-shadow(0 0 4px rgba(255, 45, 149, 0.2))
+      drop-shadow(0 0 8px rgba(0, 245, 255, 0.15));
+  }
+  88% {
+    opacity: 1;
+    filter: drop-shadow(0 0 22px rgba(255, 45, 149, 0.85))
+      drop-shadow(0 0 40px rgba(0, 245, 255, 0.55));
+  }
+  90% {
+    opacity: 0.55;
+    transform: translate(-2px, 1px);
+    filter: drop-shadow(-3px 0 rgba(0, 245, 255, 0.7))
+      drop-shadow(3px 0 rgba(255, 45, 149, 0.7));
+  }
+  91% {
+    opacity: 1;
+    transform: translate(2px, -1px);
+  }
+  92% {
+    opacity: 1;
+    transform: translate(0, 0);
+    filter: drop-shadow(0 0 14px rgba(255, 45, 149, 0.55))
+      drop-shadow(0 0 28px rgba(0, 245, 255, 0.3));
+  }
+}
+
 .neon-panel-frame {
   background-size: cover;
   background-position: center;
@@ -543,11 +661,16 @@ body {
   .press-start-tear,
   .press-start-rgb,
   .press-start-title-glitch::before,
-  .press-start-title-glitch::after {
+  .press-start-title-glitch::after,
+  .site-crt-rgb,
+  .site-crt-tear,
+  .site-crt-flash,
+  .neon-logo-flicker {
     animation: none !important;
   }
 
-  .press-start-blink {
+  .press-start-blink,
+  .neon-logo-flicker {
     opacity: 1 !important;
   }
 
