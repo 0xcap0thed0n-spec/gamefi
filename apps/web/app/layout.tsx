@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Orbitron, Press_Start_2P, Inter } from "next/font/google";
+import { Press_Start_2P } from "next/font/google";
 import { AudioProvider } from "@/components/AudioProvider";
 import { ScanlineOverlay } from "@/components/ScanlineOverlay";
 import { FixedBackground } from "@/components/FixedBackground";
@@ -8,21 +8,11 @@ import { PressStartGate } from "@/components/PressStartGate";
 import { site } from "@/content/site";
 import "./globals.css";
 
-const display = Orbitron({
-  subsets: ["latin"],
-  variable: "--font-display",
-  weight: ["500", "600", "700", "800"],
-});
-
+/** Single pixel face for the whole UI (display / body / pixel aliases). */
 const pixel = Press_Start_2P({
   subsets: ["latin"],
   variable: "--font-pixel",
   weight: ["400"],
-});
-
-const body = Inter({
-  subsets: ["latin"],
-  variable: "--font-body",
 });
 
 export const metadata: Metadata = {
@@ -35,11 +25,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout(props: { children: React.ReactNode }) {
   return (
-    <html
-      lang="en"
-      className={`${display.variable} ${pixel.variable} ${body.variable}`}
-    >
-      <body className="flex min-h-screen flex-col bg-transparent">
+    <html lang="en" className={pixel.variable}>
+      <body className="flex min-h-screen flex-col bg-transparent font-pixel">
         <AudioProvider>
           <FixedBackground />
           <ScanlineOverlay />

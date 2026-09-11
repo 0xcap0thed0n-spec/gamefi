@@ -25,9 +25,11 @@ const config: Config = {
         },
       },
       fontFamily: {
-        display: ["var(--font-display)", "system-ui", "sans-serif"],
+        // All aliases → Press Start 2P for a full pixel UI
+        display: ["var(--font-pixel)", "monospace"],
         pixel: ["var(--font-pixel)", "monospace"],
-        body: ["var(--font-body)", "system-ui", "sans-serif"],
+        body: ["var(--font-pixel)", "monospace"],
+        mono: ["var(--font-pixel)", "monospace"],
       },
       boxShadow: {
         glow: "0 0 40px rgba(0, 245, 255, 0.18)",

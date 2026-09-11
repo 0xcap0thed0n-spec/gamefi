@@ -16,19 +16,19 @@ export function Lore() {
         }}
       >
         <div className="relative z-10">
-          <p className="font-pixel text-[10px] uppercase tracking-[0.3em] text-neon-pink">
+          <p className="text-[8px] uppercase tracking-[0.3em] text-neon-pink">
             {lore.eyebrow}
           </p>
-          <h2 className="mt-3 font-display text-2xl font-semibold tracking-wide text-white sm:text-3xl">
+          <h2 className="mt-4 text-sm uppercase tracking-wide text-white sm:text-base">
             {lore.title}
           </h2>
-          <div className="mt-6 space-y-4 text-sm leading-relaxed text-zinc-300 sm:text-base">
+          <div className="mt-6 space-y-4 text-[9px] leading-relaxed text-zinc-300 sm:text-[10px]">
             {lore.body.map((paragraph, i) => (
               <p key={i}>{paragraph}</p>
             ))}
           </div>
           {note ? (
-            <p className="mt-6 rounded-lg border border-dashed border-neon-purple/40 bg-neon-purple/5 px-3 py-2 font-mono text-[11px] text-neon-purple">
+            <p className="mt-6 rounded-sm border border-dashed border-neon-purple/40 bg-neon-purple/5 px-3 py-2 text-[8px] text-neon-purple">
               {note}
             </p>
           ) : null}

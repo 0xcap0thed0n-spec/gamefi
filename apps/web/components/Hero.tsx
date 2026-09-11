@@ -27,7 +27,7 @@ export function Hero() {
           />
         </div>
 
-        <p className="mt-2 max-w-xl text-base leading-relaxed text-zinc-300 sm:text-lg">
+        <p className="mt-2 max-w-xl text-[9px] leading-relaxed text-zinc-300 sm:text-[10px]">
           {site.tagline}
         </p>
 

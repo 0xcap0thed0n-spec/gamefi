@@ -11,15 +11,13 @@ export function Footer() {
     <footer className="relative z-10 mt-auto border-t border-white/10 bg-void-950/90">
       <div className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-10 sm:flex-row sm:items-start sm:justify-between sm:px-6">
         <div>
-          <p className="font-display text-sm font-semibold uppercase tracking-[0.2em] text-white">
-            {name}
-          </p>
-          <p className="mt-2 max-w-sm text-xs leading-relaxed text-zinc-500">
+          <p className="text-[9px] uppercase tracking-[0.2em] text-white">{name}</p>
+          <p className="mt-3 max-w-sm text-[8px] leading-relaxed text-zinc-500">
             {footer.blurb}
           </p>
         </div>
         <nav
-          className="flex flex-wrap gap-x-5 gap-y-2 text-xs uppercase tracking-wider text-zinc-400"
+          className="flex flex-wrap gap-x-5 gap-y-2 text-[8px] uppercase tracking-wider text-zinc-400"
           aria-label="Footer"
         >
           {footer.links.map((link) => {
@@ -41,7 +39,7 @@ export function Footer() {
           })}
         </nav>
       </div>
-      <div className="border-t border-white/5 py-3 text-center font-mono text-[10px] text-zinc-600">
+      <div className="border-t border-white/5 py-3 text-center text-[7px] text-zinc-600">
         {footer.credit}
       </div>
     </footer>
