@@ -24,7 +24,7 @@ function loadEase(t: number): number {
 
 export function PressStartGate() {
   const { pressStart } = site;
-  const { playClick } = useAudio();
+  const { playClick, startImmersiveTheme } = useAudio();
   const [hydrated, setHydrated] = useState(false);
   const [open, setOpen] = useState(false);
   const [phase, setPhase] = useState<Phase>("idle");
@@ -40,9 +40,26 @@ export function PressStartGate() {
     setHydrated(true);
   }, []);
 
+  /** If Press Start was already cleared this session, unlock theme on the next tap/key. */
+  useEffect(() => {
+    if (!hydrated || open) return;
+    const unlock = () => {
+      startImmersiveTheme();
+      window.removeEventListener("pointerdown", unlock);
+      window.removeEventListener("keydown", unlock);
+    };
+    window.addEventListener("pointerdown", unlock);
+    window.addEventListener("keydown", unlock);
+    return () => {
+      window.removeEventListener("pointerdown", unlock);
+      window.removeEventListener("keydown", unlock);
+    };
+  }, [hydrated, open, startImmersiveTheme]);
+
   const beginBoot = useCallback(() => {
     if (phase !== "idle") return;
     playClick();
+    startImmersiveTheme();
     setPercent(0);
     setPhase("loading");
     try {
@@ -50,7 +67,7 @@ export function PressStartGate() {
     } catch {
       /* ignore */
     }
-  }, [phase, playClick]);
+  }, [phase, playClick, startImmersiveTheme]);
 
   useEffect(() => {
     if (phase !== "loading") return;

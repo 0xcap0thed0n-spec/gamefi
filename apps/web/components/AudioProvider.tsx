@@ -16,6 +16,8 @@ type AudioApi = {
   muted: boolean;
   setMuted: (value: boolean) => void;
   toggleMute: () => void;
+  /** Start looping theme from a user gesture (Press Start / first tap). */
+  startImmersiveTheme: () => void;
   playClick: () => void;
   playHover: () => void;
 };
@@ -135,6 +137,15 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     setMuted(!muted);
   }, [muted, setMuted]);
 
+  /** Call from a click/key gesture so browsers allow audio. */
+  const startImmersiveTheme = useCallback(() => {
+    setMutedState(false);
+    void (async () => {
+      await ensureCtx();
+      await playTheme();
+    })();
+  }, [ensureCtx, playTheme]);
+
   /** Classic select / confirm blip */
   const playClick = useCallback(() => {
     void (async () => {
@@ -190,10 +201,11 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       muted,
       setMuted,
       toggleMute,
+      startImmersiveTheme,
       playClick,
       playHover,
     }),
-    [muted, setMuted, toggleMute, playClick, playHover],
+    [muted, setMuted, toggleMute, startImmersiveTheme, playClick, playHover],
   );
 
   return (
@@ -208,6 +220,7 @@ export function useAudio() {
       muted: true,
       setMuted: () => {},
       toggleMute: () => {},
+      startImmersiveTheme: () => {},
       playClick: () => {},
       playHover: () => {},
     } satisfies AudioApi;
