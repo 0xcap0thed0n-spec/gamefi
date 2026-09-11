@@ -22,7 +22,7 @@ export function Hero() {
           <img
             src={site.assets.logo}
             alt={`${site.name} logo`}
-            className="neon-logo h-auto w-56 bg-transparent object-contain sm:w-72 md:w-80 lg:w-[22rem]"
+            className="neon-logo neon-logo-flicker h-auto w-56 bg-transparent object-contain sm:w-72 md:w-80 lg:w-[22rem]"
             style={{ backgroundColor: "transparent" }}
           />
         </div>

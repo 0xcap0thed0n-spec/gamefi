@@ -4,10 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { site } from "@/content/site";
 import { useAudio } from "./AudioProvider";
 
-/** Session flag so whitelist testing isn’t blocked every refresh. Clear to re-show. */
-const STORAGE_KEY = "nf_press_start_done";
-
-/** Fake boot load after Start — keep long enough to feel like a CRT handoff. */
+/** Boot load after Start — theme starts when this finishes (same beat as the handoff). */
 const LOAD_MS = 2400;
 const FADE_MS = 900;
 
@@ -26,48 +23,24 @@ export function PressStartGate() {
   const { pressStart } = site;
   const { playClick, startImmersiveTheme } = useAudio();
   const [hydrated, setHydrated] = useState(false);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const [phase, setPhase] = useState<Phase>("idle");
   const [percent, setPercent] = useState(0);
 
   useEffect(() => {
-    try {
-      const done = sessionStorage.getItem(STORAGE_KEY) === "1";
-      setOpen(!done);
-    } catch {
-      setOpen(true);
-    }
+    // Always show Press Start on each page load / refresh (incl. mobile).
+    setOpen(true);
+    setPhase("idle");
+    setPercent(0);
     setHydrated(true);
   }, []);
-
-  /** If Press Start was already cleared this session, unlock theme on the next tap/key. */
-  useEffect(() => {
-    if (!hydrated || open) return;
-    const unlock = () => {
-      startImmersiveTheme();
-      window.removeEventListener("pointerdown", unlock);
-      window.removeEventListener("keydown", unlock);
-    };
-    window.addEventListener("pointerdown", unlock);
-    window.addEventListener("keydown", unlock);
-    return () => {
-      window.removeEventListener("pointerdown", unlock);
-      window.removeEventListener("keydown", unlock);
-    };
-  }, [hydrated, open, startImmersiveTheme]);
 
   const beginBoot = useCallback(() => {
     if (phase !== "idle") return;
     playClick();
-    startImmersiveTheme();
     setPercent(0);
     setPhase("loading");
-    try {
-      sessionStorage.setItem(STORAGE_KEY, "1");
-    } catch {
-      /* ignore */
-    }
-  }, [phase, playClick, startImmersiveTheme]);
+  }, [phase, playClick]);
 
   useEffect(() => {
     if (phase !== "loading") return;
@@ -80,12 +53,16 @@ export function PressStartGate() {
       else setPercent(100);
     };
     raf = window.requestAnimationFrame(tick);
-    const toOut = window.setTimeout(() => setPhase("out"), LOAD_MS);
+    // Theme waits for the full boot bar — same length as the Start transition.
+    const toOut = window.setTimeout(() => {
+      startImmersiveTheme();
+      setPhase("out");
+    }, LOAD_MS);
     return () => {
       window.cancelAnimationFrame(raf);
       window.clearTimeout(toOut);
     };
-  }, [phase]);
+  }, [phase, startImmersiveTheme]);
 
   useEffect(() => {
     if (phase !== "out") return;
