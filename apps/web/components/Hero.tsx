@@ -13,7 +13,12 @@ export function Hero() {
 
       <div className="relative mx-auto flex max-w-5xl flex-col items-center text-center">
         <div className="mb-8 flex w-full items-center justify-between gap-3">
-          <span className="badge-neon">{site.hero.badge}</span>
+          <span
+            className="badge-neon neon-logo-flicker"
+            style={{ animationDelay: "0.35s" }}
+          >
+            {site.hero.badge}
+          </span>
           <MuteToggle />
         </div>
 
@@ -34,9 +39,10 @@ export function Hero() {
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
           <a
             href={site.hero.ctaPrimaryHref}
-            className="neon-btn neon-btn-cyan-art"
+            className="neon-btn neon-btn-cyan-art neon-logo-flicker"
             style={{
               backgroundImage: `url(${site.assets.neonButton})`,
+              animationDelay: "0.7s",
             }}
             onClick={playClick}
             onMouseEnter={playHover}
@@ -45,7 +51,8 @@ export function Hero() {
           </a>
           <a
             href={site.hero.ctaSecondaryHref}
-            className="neon-btn-secondary"
+            className="neon-btn-secondary neon-logo-flicker"
+            style={{ animationDelay: "1.1s" }}
             onClick={playClick}
             onMouseEnter={playHover}
           >
