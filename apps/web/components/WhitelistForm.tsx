@@ -316,15 +316,15 @@ export function WhitelistForm() {
                 ) : (
                   <a
                     href="/api/twitter/login"
+                    className="neon-btn-secondary inline-flex w-full items-center justify-center"
                     onClick={() => {
                       try {
                         sessionStorage.setItem("nf_oauth_return", "1");
                       } catch {
                         /* ignore */
                       }
+                      playClick();
                     }}
-                    className="neon-btn-secondary inline-flex w-full items-center justify-center"
-                    onClick={playClick}
                     onMouseEnter={playHover}
                   >
                     {whitelist.connectXCta}
