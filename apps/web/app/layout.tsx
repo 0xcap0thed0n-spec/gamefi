@@ -27,6 +27,12 @@ export default function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html lang="en" className={pixel.variable}>
       <body className="flex min-h-screen flex-col bg-transparent font-pixel">
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){try{var q=location.search||'';var skip=q.indexOf('twitter_error=')!==-1||q.indexOf('twitter=')!==-1||sessionStorage.getItem('nf_oauth_return')==='1';if(skip){document.documentElement.classList.add('nf-booted');sessionStorage.removeItem('nf_oauth_return');}}catch(e){}})();",
+          }}
+        />
         <style
           id="nf-boot-critical"
           dangerouslySetInnerHTML={{
