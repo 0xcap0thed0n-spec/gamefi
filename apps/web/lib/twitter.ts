@@ -95,9 +95,10 @@ export function buildAuthorizeUrl(challenge: string, state: string): string {
 export async function exchangeCode(code: string, verifier: string) {
   const clientId = (process.env.TWITTER_CLIENT_ID || "").trim();
   const redirectUri = (process.env.TWITTER_CALLBACK_URL || "").trim();
-  const secret = (process.env.TWITTER_CLIENT_SECRET || "").trim();
-  // Strip a mistaken leading "-" from notepad copy-paste.
-  const cleanSecret = secret.replace(/^-+/, "");
+  // Prefer public PKCE (Native App / no secret). Confidential Basic auth is optional
+  // and only used when TWITTER_CLIENT_SECRET is set — wrong secrets cause
+  // "Missing valid authorization header".
+  const secret = (process.env.TWITTER_CLIENT_SECRET || "").trim().replace(/^-+/, "");
   const body = new URLSearchParams({
     code,
     grant_type: "authorization_code",
@@ -109,16 +110,14 @@ export async function exchangeCode(code: string, verifier: string) {
   const headers: Record<string, string> = {
     "Content-Type": "application/x-www-form-urlencoded",
   };
-  // Web App = confidential client — X requires Basic auth. Empty/wrong secret
-  // yields "Missing valid authorization header".
-  if (cleanSecret) {
-    // Confidential client: Basic auth ONLY (do not also send client_secret in body).
-    headers.Authorization = `Basic ${Buffer.from(`${clientId}:${cleanSecret}`).toString("base64")}`;
-  } else {
-    throw new Error("TWITTER_CLIENT_SECRET missing — confidential Web App requires Basic auth");
+  if (secret) {
+    // RFC 6749: form-urlencoded then Basic
+    const user = encodeURIComponent(clientId);
+    const pass = encodeURIComponent(secret);
+    headers.Authorization = `Basic ${Buffer.from(`${user}:${pass}`, "utf8").toString("base64")}`;
   }
 
-  const res = await fetch("https://api.twitter.com/2/oauth2/token", {
+  const res = await fetch("https://api.x.com/2/oauth2/token", {
     method: "POST",
     headers,
     body,
@@ -143,7 +142,7 @@ export async function exchangeCode(code: string, verifier: string) {
 }
 
 async function xGet(path: string, accessToken: string) {
-  const res = await fetch(`https://api.twitter.com/2${path}`, {
+  const res = await fetch(`https://api.x.com/2${path}`, {
     headers: { Authorization: `Bearer ${accessToken}` },
     cache: "no-store",
   });
