@@ -150,7 +150,16 @@ body {
 
 /* —— Press Start gate —— */
 .press-start-gate {
-  animation: press-start-in 0.45s ease-out both;
+  /* No fade-in — opacity 0 intro flashed the site underneath */
+  opacity: 1;
+}
+
+
+/* Hide main site until Press Start dismisses (html.nf-booted) */
+html:not(.nf-booted) main,
+html:not(.nf-booted) footer {
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 .press-start-gate--out {
