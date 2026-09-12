@@ -82,8 +82,10 @@ export function PressStartGate() {
     if (!open) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    document.documentElement.classList.remove("nf-booted");
     return () => {
       document.body.style.overflow = prev;
+      document.documentElement.classList.add("nf-booted");
     };
   }, [open]);
 
