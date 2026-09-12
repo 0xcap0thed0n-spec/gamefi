@@ -22,18 +22,10 @@ function loadEase(t: number): number {
 export function PressStartGate() {
   const { pressStart } = site;
   const { playClick, startImmersiveTheme } = useAudio();
-  const [hydrated, setHydrated] = useState(false);
+  // open starts true so SSR + first paint cover the site (no flash before hydrate).
   const [open, setOpen] = useState(true);
   const [phase, setPhase] = useState<Phase>("idle");
   const [percent, setPercent] = useState(0);
-
-  useEffect(() => {
-    // Always show Press Start on each page load / refresh (incl. mobile).
-    setOpen(true);
-    setPhase("idle");
-    setPercent(0);
-    setHydrated(true);
-  }, []);
 
   const beginBoot = useCallback(() => {
     if (phase !== "idle") return;
@@ -95,7 +87,7 @@ export function PressStartGate() {
     };
   }, [open]);
 
-  if (!hydrated || !open) return null;
+  if (!open) return null;
 
   return (
     <div
