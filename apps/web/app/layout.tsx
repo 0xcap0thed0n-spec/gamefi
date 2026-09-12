@@ -27,6 +27,16 @@ export default function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html lang="en" className={pixel.variable}>
       <body className="flex min-h-screen flex-col bg-transparent font-pixel">
+        <style
+          id="nf-boot-critical"
+          dangerouslySetInnerHTML={{
+            __html:
+              "html:not(.nf-booted) main,html:not(.nf-booted) footer{visibility:hidden!important;pointer-events:none!important}" +
+              "#nf-boot-veil{position:fixed;inset:0;z-index:70;background:#05040a}" +
+              "html.nf-booted #nf-boot-veil{display:none}",
+          }}
+        />
+        <div id="nf-boot-veil" aria-hidden />
         <AudioProvider>
           <FixedBackground />
           <ScanlineOverlay />
