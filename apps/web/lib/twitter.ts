@@ -112,8 +112,10 @@ export async function exchangeCode(code: string, verifier: string) {
   // Web App = confidential client — X requires Basic auth. Empty/wrong secret
   // yields "Missing valid authorization header".
   if (cleanSecret) {
+    // Confidential client: Basic auth ONLY (do not also send client_secret in body).
     headers.Authorization = `Basic ${Buffer.from(`${clientId}:${cleanSecret}`).toString("base64")}`;
-    body.set("client_secret", cleanSecret);
+  } else {
+    throw new Error("TWITTER_CLIENT_SECRET missing — confidential Web App requires Basic auth");
   }
 
   const res = await fetch("https://api.twitter.com/2/oauth2/token", {
