@@ -12,9 +12,13 @@ import {
   type PkceCookie,
 } from "@/lib/twitter";
 
-function redirectHome(req: NextRequest, hash = "whitelist", error?: string) {
+function redirectHome(req: NextRequest, hash = "whitelist", error?: string, ok = false) {
   const origin = new URL(req.url).origin;
-  const q = error ? `?twitter_error=${encodeURIComponent(error)}` : "";
+  const q = error
+    ? `?twitter_error=${encodeURIComponent(error)}`
+    : ok
+      ? "?twitter=connected"
+      : "";
   return NextResponse.redirect(`${origin}/${q}#${hash}`);
 }
 
@@ -54,7 +58,7 @@ export async function GET(req: NextRequest) {
       user,
     };
 
-    const res = redirectHome(req, "whitelist");
+    const res = redirectHome(req, "whitelist", undefined, true);
     res.cookies.set(TWITTER_PKCE_COOKIE, "", {
       httpOnly: true,
       secure: cookieSecure(),
