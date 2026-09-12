@@ -27,6 +27,24 @@ export function PressStartGate() {
   const [phase, setPhase] = useState<Phase>("idle");
   const [percent, setPercent] = useState(0);
 
+  useEffect(() => {
+    // OAuth callback is a full navigation — don't force Press Start again.
+    try {
+      const q = new URLSearchParams(window.location.search);
+      const skip =
+        q.has("twitter_error") ||
+        q.has("twitter") ||
+        sessionStorage.getItem("nf_oauth_return") === "1";
+      if (skip) {
+        sessionStorage.removeItem("nf_oauth_return");
+        document.documentElement.classList.add("nf-booted");
+        setOpen(false);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
   const beginBoot = useCallback(() => {
     if (phase !== "idle") return;
     playClick();
