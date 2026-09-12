@@ -93,8 +93,11 @@ export function buildAuthorizeUrl(challenge: string, state: string): string {
 }
 
 export async function exchangeCode(code: string, verifier: string) {
-  const clientId = process.env.TWITTER_CLIENT_ID!;
-  const redirectUri = process.env.TWITTER_CALLBACK_URL!;
+  const clientId = (process.env.TWITTER_CLIENT_ID || "").trim();
+  const redirectUri = (process.env.TWITTER_CALLBACK_URL || "").trim();
+  const secret = (process.env.TWITTER_CLIENT_SECRET || "").trim();
+  // Strip a mistaken leading "-" from notepad copy-paste.
+  const cleanSecret = secret.replace(/^-+/, "");
   const body = new URLSearchParams({
     code,
     grant_type: "authorization_code",
@@ -106,9 +109,11 @@ export async function exchangeCode(code: string, verifier: string) {
   const headers: Record<string, string> = {
     "Content-Type": "application/x-www-form-urlencoded",
   };
-  const secret = process.env.TWITTER_CLIENT_SECRET;
-  if (secret) {
-    headers.Authorization = `Basic ${Buffer.from(`${clientId}:${secret}`).toString("base64")}`;
+  // Web App = confidential client — X requires Basic auth. Empty/wrong secret
+  // yields "Missing valid authorization header".
+  if (cleanSecret) {
+    headers.Authorization = `Basic ${Buffer.from(`${clientId}:${cleanSecret}`).toString("base64")}`;
+    body.set("client_secret", cleanSecret);
   }
 
   const res = await fetch("https://api.twitter.com/2/oauth2/token", {
