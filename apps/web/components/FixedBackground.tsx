@@ -4,13 +4,10 @@ import { site } from "@/content/site";
 export function FixedBackground() {
   return (
     <div
-      className="pointer-events-none fixed inset-0 z-0"
+      className="pointer-events-none fixed inset-0 z-0 bg-cover bg-no-repeat max-md:[background-position:28%_center] md:bg-center"
       aria-hidden
       style={{
         backgroundImage: `url(${site.assets.background})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
       }}
     >
       <div className="absolute inset-0 bg-void-950/70" />
