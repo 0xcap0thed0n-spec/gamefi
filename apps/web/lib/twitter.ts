@@ -29,7 +29,10 @@ export function twitterBearerConfigured(): boolean {
 }
 
 export function twitterBearer(): string {
-  return (process.env.TWITTER_BEARER_TOKEN || "").trim();
+  let t = (process.env.TWITTER_BEARER_TOKEN || "").trim();
+  // Users sometimes paste "Bearer xxxx" — Authorization header already adds Bearer.
+  if (/^bearer\s+/i.test(t)) t = t.replace(/^bearer\s+/i, "").trim();
+  return t;
 }
 
 
@@ -192,12 +195,29 @@ export async function fetchMe(accessToken: string): Promise<TwitterUser> {
 }
 
 export async function resolveUsername(username: string, accessToken: string): Promise<string | null> {
-  const clean = username.replace(/^@/, "");
-  if (!clean) return null;
-  const { ok, json } = await xGet(`/users/by/username/${encodeURIComponent(clean)}`, accessToken);
-  if (!ok) return null;
+  const result = await resolveUsernameDetailed(username, accessToken);
+  return result.id;
+}
+
+export async function resolveUsernameDetailed(
+  username: string,
+  accessToken: string,
+): Promise<{ id: string | null; error?: string }> {
+  const clean = username.replace(/^@/, "").trim();
+  if (!clean) return { id: null, error: "Empty handle" };
+  const { ok, status, json } = await xGet(
+    `/users/by/username/${encodeURIComponent(clean)}`,
+    accessToken,
+  );
+  if (!ok) {
+    return {
+      id: null,
+      error: `Handle lookup failed (${status}): ${xErrorDetail(json, status)}`,
+    };
+  }
   const data = json.data as { id?: string } | undefined;
-  return data?.id ?? null;
+  if (!data?.id) return { id: null, error: `No X user found for @${clean}` };
+  return { id: data.id };
 }
 
 async function userInPaginatedList(
@@ -325,15 +345,23 @@ export async function resolveUsernameWithToken(
   return resolveUsername(username, accessToken);
 }
 
+async function resolveApplicantOrError(applicantHandle: string, bearer: string) {
+  const looked = await resolveUsernameDetailed(applicantHandle, bearer);
+  if (!looked.id) {
+    return { error: looked.error || "Could not find that X handle" } as const;
+  }
+  return { id: looked.id } as const;
+}
+
 export async function verifyFollowByHandle(
   applicantHandle: string,
   targetUsername: string,
 ): Promise<{ verified: boolean; detail: string }> {
   const bearer = twitterBearer();
   if (!bearer) return { verified: false, detail: "TWITTER_BEARER_TOKEN not set on server" };
-  const applicantId = await resolveUsername(applicantHandle, bearer);
-  if (!applicantId) return { verified: false, detail: "Could not find that X handle" };
-  return verifyFollow(bearer, applicantId, targetUsername);
+  const looked = await resolveApplicantOrError(applicantHandle, bearer);
+  if ("error" in looked) return { verified: false, detail: looked.error };
+  return verifyFollow(bearer, looked.id, targetUsername);
 }
 
 export async function verifyLikeByHandle(
@@ -342,9 +370,9 @@ export async function verifyLikeByHandle(
 ): Promise<{ verified: boolean; detail: string }> {
   const bearer = twitterBearer();
   if (!bearer) return { verified: false, detail: "TWITTER_BEARER_TOKEN not set on server" };
-  const applicantId = await resolveUsername(applicantHandle, bearer);
-  if (!applicantId) return { verified: false, detail: "Could not find that X handle" };
-  return verifyLike(bearer, applicantId, tweetId);
+  const looked = await resolveApplicantOrError(applicantHandle, bearer);
+  if ("error" in looked) return { verified: false, detail: looked.error };
+  return verifyLike(bearer, looked.id, tweetId);
 }
 
 export async function verifyRetweetByHandle(
@@ -353,9 +381,9 @@ export async function verifyRetweetByHandle(
 ): Promise<{ verified: boolean; detail: string }> {
   const bearer = twitterBearer();
   if (!bearer) return { verified: false, detail: "TWITTER_BEARER_TOKEN not set on server" };
-  const applicantId = await resolveUsername(applicantHandle, bearer);
-  if (!applicantId) return { verified: false, detail: "Could not find that X handle" };
-  return verifyRetweet(bearer, applicantId, tweetId);
+  const looked = await resolveApplicantOrError(applicantHandle, bearer);
+  if ("error" in looked) return { verified: false, detail: looked.error };
+  return verifyRetweet(bearer, looked.id, tweetId);
 }
 
 export function getTwitterTargets() {
