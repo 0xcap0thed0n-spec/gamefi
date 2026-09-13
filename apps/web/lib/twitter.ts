@@ -360,7 +360,7 @@ export async function verifyFollowByHandle(
   const bearer = twitterBearer();
   if (!bearer) return { verified: false, detail: "TWITTER_BEARER_TOKEN not set on server" };
   const looked = await resolveApplicantOrError(applicantHandle, bearer);
-  if ("error" in looked) return { verified: false, detail: looked.error };
+  if ("error" in looked) return { verified: false, detail: looked.error ?? "Could not find that X handle" };
   return verifyFollow(bearer, looked.id, targetUsername);
 }
 
@@ -371,7 +371,7 @@ export async function verifyLikeByHandle(
   const bearer = twitterBearer();
   if (!bearer) return { verified: false, detail: "TWITTER_BEARER_TOKEN not set on server" };
   const looked = await resolveApplicantOrError(applicantHandle, bearer);
-  if ("error" in looked) return { verified: false, detail: looked.error };
+  if ("error" in looked) return { verified: false, detail: looked.error ?? "Could not find that X handle" };
   return verifyLike(bearer, looked.id, tweetId);
 }
 
@@ -382,7 +382,7 @@ export async function verifyRetweetByHandle(
   const bearer = twitterBearer();
   if (!bearer) return { verified: false, detail: "TWITTER_BEARER_TOKEN not set on server" };
   const looked = await resolveApplicantOrError(applicantHandle, bearer);
-  if ("error" in looked) return { verified: false, detail: looked.error };
+  if ("error" in looked) return { verified: false, detail: looked.error ?? "Could not find that X handle" };
   return verifyRetweet(bearer, looked.id, tweetId);
 }
 
