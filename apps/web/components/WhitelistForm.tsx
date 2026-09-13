@@ -1,36 +1,30 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { site } from "@/content/site";
 import { useAudio } from "./AudioProvider";
 
 type FormState = {
   wallet: string;
+  twitter: string;
   reason: string;
   referral: string;
 };
 
-type XUser = { id: string; username: string; name: string };
-
 type SocialAction = "follow" | "retweet" | "like";
 
 type TaskState = {
-  verified: boolean;
-  detail: string;
-  busy: boolean;
   opened: boolean;
 };
 
-const empty: FormState = { wallet: "", reason: "", referral: "" };
+const empty: FormState = { wallet: "", twitter: "", reason: "", referral: "" };
 
 const WALLET_RE = /^0x[a-fA-F0-9]{40}$/;
+const HANDLE_RE = /^[A-Za-z0-9_]{1,15}$/;
 
-const emptyTask = (): TaskState => ({
-  verified: false,
-  detail: "",
-  busy: false,
-  opened: false,
-});
+function normalizeHandle(raw: string): string {
+  return raw.trim().replace(/^@+/, "");
+}
 
 export function WhitelistForm() {
   const { whitelist, assets, twitter } = site;
@@ -39,16 +33,10 @@ export function WhitelistForm() {
   const [values, setValues] = useState<FormState>(empty);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
-
-  const [xUser, setXUser] = useState<XUser | null>(null);
-  const [xLoading, setXLoading] = useState(true);
-  const [xConfigured, setXConfigured] = useState(true);
-  const [xError, setXError] = useState("");
-
   const [tasks, setTasks] = useState<Record<SocialAction, TaskState>>({
-    follow: emptyTask(),
-    retweet: emptyTask(),
-    like: emptyTask(),
+    follow: { opened: false },
+    retweet: { opened: false },
+    like: { opened: false },
   });
 
   const targetUsername = twitter.targetUsername.replace(/^@/, "");
@@ -58,8 +46,10 @@ export function WhitelistForm() {
   const socialLive = followReady || tweetReady;
 
   const walletOk = WALLET_RE.test(values.wallet.trim());
+  const handle = normalizeHandle(values.twitter);
+  const handleOk = HANDLE_RE.test(handle);
   const canSubmit =
-    walletOk && !!xUser && values.reason.trim().length > 0 && status !== "submitting";
+    walletOk && handleOk && values.reason.trim().length > 0 && status !== "submitting";
 
   const socialRows = useMemo(
     () =>
@@ -95,117 +85,28 @@ export function WhitelistForm() {
     [followReady, targetTweetId, targetUsername, tweetReady, whitelist.social],
   );
 
-  const refreshMe = useCallback(async () => {
-    setXLoading(true);
-    setXError("");
-    try {
-      const res = await fetch("/api/twitter/me", { credentials: "include" });
-      if (res.status === 503) {
-        setXConfigured(false);
-        setXUser(null);
-        return;
-      }
-      setXConfigured(true);
-      if (!res.ok) {
-        setXUser(null);
-        return;
-      }
-      const data = await res.json();
-      if (data?.user?.username) {
-        setXUser(data.user as XUser);
-      } else {
-        setXUser(null);
-      }
-    } catch {
-      setXUser(null);
-    } finally {
-      setXLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void refreshMe();
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      const err = params.get("twitter_error");
-      if (err) {
-        setXError(decodeURIComponent(err));
-        params.delete("twitter_error");
-        const next = `${window.location.pathname}${params.toString() ? `?${params}` : ""}${window.location.hash || "#whitelist"}`;
-        window.history.replaceState({}, "", next);
-      }
-    }
-  }, [refreshMe]);
-
   function onChange(key: keyof FormState, value: string) {
     setValues((prev) => ({ ...prev, [key]: value }));
   }
 
   function markOpened(action: SocialAction) {
     playClick();
-    setTasks((prev) => ({ ...prev, [action]: { ...prev[action], opened: true } }));
-  }
-
-  async function verifyAction(action: SocialAction) {
-    if (!xUser) {
-      setXError(whitelist.social.needConnect);
-      return;
-    }
-    playClick();
-    setTasks((prev) => ({
-      ...prev,
-      [action]: { ...prev[action], busy: true, detail: "" },
-    }));
-    try {
-      const res = await fetch("/api/twitter/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ action }),
-      });
-      const payload = await res.json().catch(() => ({}));
-      const detail =
-        (typeof payload.detail === "string" && payload.detail) ||
-        (typeof payload.error === "string" && payload.error) ||
-        (res.ok ? "Done" : "Verification failed");
-      const verified = Boolean(payload.verified);
-      setTasks((prev) => ({
-        ...prev,
-        [action]: {
-          ...prev[action],
-          busy: false,
-          verified,
-          detail,
-        },
-      }));
-    } catch (err) {
-      setTasks((prev) => ({
-        ...prev,
-        [action]: {
-          ...prev[action],
-          busy: false,
-          verified: false,
-          detail: err instanceof Error ? err.message : "Verification failed",
-        },
-      }));
-    }
+    setTasks((prev) => ({ ...prev, [action]: { opened: true } }));
   }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!walletOk || !xUser || !values.reason.trim()) return;
+    if (!walletOk || !handleOk || !values.reason.trim()) return;
     setStatus("submitting");
     setErrorMsg("");
     playClick();
-
-    const twitterHandle = `@${xUser.username}`;
 
     try {
       const res = await fetch("/api/whitelist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          twitter: twitterHandle,
+          twitter: `@${handle}`,
           wallet: values.wallet.trim(),
           reason: values.reason,
           referral: values.referral || undefined,
@@ -229,11 +130,7 @@ export function WhitelistForm() {
     setValues(empty);
     setStatus("idle");
     setErrorMsg("");
-    setTasks({
-      follow: emptyTask(),
-      retweet: emptyTask(),
-      like: emptyTask(),
-    });
+    setTasks({ follow: { opened: false }, retweet: { opened: false }, like: { opened: false } });
   }
 
   return (
@@ -296,42 +193,26 @@ export function WhitelistForm() {
                 )}
               </label>
 
-              <div className="space-y-2">
+              <label className="block space-y-2">
                 <span className="text-[8px] uppercase tracking-wider text-zinc-400">
                   {whitelist.fields.twitter.label}
                 </span>
-                {!xConfigured ? (
-                  <p className="rounded-sm border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[8px] text-amber-200">
-                    {whitelist.xNotConfigured}
-                  </p>
-                ) : xLoading ? (
-                  <div className="neon-input text-zinc-500">Checking X session...</div>
-                ) : xUser ? (
-                  <div className="neon-input flex w-full items-center justify-between gap-3">
-                    <span className="text-neon-cyan">@{xUser.username}</span>
-                    <span className="text-[7px] uppercase tracking-wider text-neon-cyan">
-                      {whitelist.xConnectedBadge}
-                    </span>
-                  </div>
+                <input
+                  required
+                  name={whitelist.fields.twitter.name}
+                  value={values.twitter}
+                  onChange={(e) => onChange("twitter", e.target.value)}
+                  placeholder={whitelist.fields.twitter.placeholder}
+                  className="neon-input"
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+                {values.twitter && !handleOk ? (
+                  <p className="text-[8px] text-neon-pink">{whitelist.handleInvalid}</p>
                 ) : (
-                  <a
-                    href="/api/twitter/login"
-                    className="neon-btn-secondary inline-flex w-full items-center justify-center"
-                    onClick={() => {
-                      try {
-                        sessionStorage.setItem("nf_oauth_return", "1");
-                      } catch {
-                        /* ignore */
-                      }
-                      playClick();
-                    }}
-                    onMouseEnter={playHover}
-                  >
-                    {whitelist.connectXCta}
-                  </a>
+                  <p className="text-[7px] leading-relaxed text-zinc-500">{whitelist.handleHint}</p>
                 )}
-                {xError ? <p className="text-[8px] text-neon-pink">{xError}</p> : null}
-              </div>
+              </label>
 
               <div className="space-y-3 rounded-sm border border-neon-cyan/20 bg-black/30 p-3 sm:p-4">
                 <div>
@@ -353,7 +234,6 @@ export function WhitelistForm() {
                 <ul className="space-y-2">
                   {socialRows.map((row) => {
                     const state = tasks[row.action];
-                    const canVerify = Boolean(xUser) && row.ready && !state.busy;
                     return (
                       <li
                         key={row.action}
@@ -367,12 +247,10 @@ export function WhitelistForm() {
                                 {row.hint}
                               </span>
                             </p>
-                            {state.verified ? (
+                            {state.opened ? (
                               <p className="mt-1 text-[7px] uppercase tracking-wider text-neon-cyan">
-                                {whitelist.social.verifiedBadge}
+                                {whitelist.social.openedHint}
                               </p>
-                            ) : state.detail ? (
-                              <p className="mt-1 text-[7px] text-neon-pink">{state.detail}</p>
                             ) : null}
                           </div>
                           <div className="flex shrink-0 items-center gap-2">
@@ -396,19 +274,6 @@ export function WhitelistForm() {
                                 {whitelist.social.openCta}
                               </button>
                             )}
-                            <button
-                              type="button"
-                              disabled={!canVerify || state.verified}
-                              className="neon-btn px-3 py-1.5 text-[7px] disabled:cursor-not-allowed disabled:opacity-40"
-                              onClick={() => void verifyAction(row.action)}
-                              onMouseEnter={playHover}
-                            >
-                              {state.busy
-                                ? whitelist.social.verifyingCta
-                                : state.verified
-                                  ? whitelist.social.verifiedBadge
-                                  : whitelist.social.verifyCta}
-                            </button>
                           </div>
                         </div>
                       </li>
