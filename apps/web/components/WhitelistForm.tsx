@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { site } from "@/content/site";
 import { useAudio } from "./AudioProvider";
 
@@ -20,8 +20,6 @@ type TaskState = {
   busy: boolean;
 };
 
-type XUser = { id: string; username: string; name: string };
-
 const empty: FormState = { wallet: "", twitter: "", reason: "", referral: "" };
 
 const WALLET_RE = /^0x[a-fA-F0-9]{40}$/;
@@ -38,7 +36,6 @@ export function WhitelistForm() {
   const [values, setValues] = useState<FormState>(empty);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
-  const [xUser, setXUser] = useState<XUser | null>(null);
   const [tasks, setTasks] = useState<Record<SocialAction, TaskState>>({
     follow: { opened: false, verified: false, detail: "", busy: false },
     retweet: { opened: false, verified: false, detail: "", busy: false },
@@ -52,9 +49,7 @@ export function WhitelistForm() {
   const socialLive = followReady || tweetReady;
 
   const walletOk = WALLET_RE.test(values.wallet.trim());
-  const typedHandle = normalizeHandle(values.twitter);
-  const connectedHandle = xUser ? normalizeHandle(xUser.username) : "";
-  const handle = typedHandle || connectedHandle;
+  const handle = normalizeHandle(values.twitter);
   const handleOk = HANDLE_RE.test(handle);
   const canSubmit =
     walletOk && handleOk && values.reason.trim().length > 0 && status !== "submitting";
@@ -66,6 +61,7 @@ export function WhitelistForm() {
           action: "follow" as const,
           label: whitelist.social.followLabel,
           ready: followReady,
+          canAutoVerify: true,
           openHref: followReady
             ? `https://x.com/intent/follow?screen_name=${encodeURIComponent(targetUsername)}`
             : null,
@@ -75,6 +71,7 @@ export function WhitelistForm() {
           action: "retweet" as const,
           label: whitelist.social.retweetLabel,
           ready: tweetReady,
+          canAutoVerify: true,
           openHref: tweetReady
             ? `https://x.com/intent/retweet?tweet_id=${encodeURIComponent(targetTweetId)}`
             : null,
@@ -84,6 +81,8 @@ export function WhitelistForm() {
           action: "like" as const,
           label: whitelist.social.likeLabel,
           ready: tweetReady,
+          // X forbids app-only like checks — Open only, no Connect X required.
+          canAutoVerify: false,
           openHref: tweetReady
             ? `https://x.com/intent/like?tweet_id=${encodeURIComponent(targetTweetId)}`
             : null,
@@ -97,44 +96,13 @@ export function WhitelistForm() {
     setValues((prev) => ({ ...prev, [key]: value }));
   }
 
-  const refreshMe = useCallback(async () => {
-    try {
-      const res = await fetch("/api/twitter/me", { credentials: "include" });
-      if (!res.ok) {
-        setXUser(null);
-        return;
-      }
-      const data = await res.json();
-      if (data?.user?.username) {
-        const user = data.user as XUser;
-        setXUser(user);
-        // Connected account owns the handle — autofill / keep in sync.
-        setValues((prev) => ({ ...prev, twitter: `@${user.username}` }));
-      } else setXUser(null);
-    } catch {
-      setXUser(null);
-    }
-  }, []);
-
-  useEffect(() => {
-    void refreshMe();
-    if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("twitter") === "connected" || params.get("twitter_error")) {
-      void refreshMe();
-      params.delete("twitter");
-      params.delete("twitter_error");
-      const q = params.toString();
-      window.history.replaceState({}, "", `${window.location.pathname}${q ? `?${q}` : ""}${window.location.hash || "#whitelist"}`);
-    }
-  }, [refreshMe]);
-
   function markOpened(action: SocialAction) {
     playClick();
     setTasks((prev) => ({ ...prev, [action]: { ...prev[action], opened: true } }));
   }
 
   async function verifyAction(action: SocialAction) {
+    if (action === "like") return;
     if (!handleOk) {
       setErrorMsg(whitelist.social.needHandle);
       return;
@@ -164,9 +132,6 @@ export function WhitelistForm() {
           detail,
         },
       }));
-      if (payload.needsConnect) {
-        setErrorMsg(detail);
-      }
     } catch (err) {
       setTasks((prev) => ({
         ...prev,
@@ -290,19 +255,14 @@ export function WhitelistForm() {
                 <input
                   required
                   name={whitelist.fields.twitter.name}
-                  value={values.twitter || (xUser ? `@${xUser.username}` : "")}
+                  value={values.twitter}
                   onChange={(e) => onChange("twitter", e.target.value)}
                   placeholder={whitelist.fields.twitter.placeholder}
                   className="neon-input"
                   autoComplete="off"
                   spellCheck={false}
-                  readOnly={Boolean(xUser)}
                 />
-                {xUser ? (
-                  <p className="text-[7px] leading-relaxed text-neon-cyan">
-                    Filled from Connect X — @{xUser.username}
-                  </p>
-                ) : values.twitter && !handleOk ? (
+                {values.twitter && !handleOk ? (
                   <p className="text-[8px] text-neon-pink">{whitelist.handleInvalid}</p>
                 ) : (
                   <p className="text-[7px] leading-relaxed text-zinc-500">{whitelist.handleHint}</p>
@@ -318,34 +278,6 @@ export function WhitelistForm() {
                   <p className="mt-2 text-[7px] leading-relaxed text-zinc-500">
                     {whitelist.social.subtitle}
                   </p>
-                  <div className="mt-3 flex flex-wrap items-center gap-2">
-                    {xUser ? (
-                      <p className="text-[7px] uppercase tracking-wider text-neon-cyan">
-                        {whitelist.xConnectedBadge} @{xUser.username}
-                      </p>
-                    ) : (
-                      <>
-                        <a
-                          href="/api/twitter/login"
-                          className="neon-btn-secondary px-3 py-1.5 text-[7px]"
-                          onClick={() => {
-                            try {
-                              sessionStorage.setItem("nf_oauth_return", "1");
-                            } catch {
-                              /* ignore */
-                            }
-                            playClick();
-                          }}
-                          onMouseEnter={playHover}
-                        >
-                          {whitelist.social.connectXForLikes}
-                        </a>
-                        <span className="text-[7px] leading-relaxed text-zinc-500">
-                          {whitelist.social.connectXForLikesHint}
-                        </span>
-                      </>
-                    )}
-                  </div>
                 </div>
 
                 {!socialLive ? (
@@ -357,7 +289,8 @@ export function WhitelistForm() {
                 <ul className="space-y-2">
                   {socialRows.map((row) => {
                     const state = tasks[row.action];
-                    const canVerify = handleOk && row.ready && !state.busy && !state.verified;
+                    const canVerify =
+                      row.canAutoVerify && handleOk && row.ready && !state.busy && !state.verified;
                     return (
                       <li
                         key={row.action}
@@ -377,6 +310,10 @@ export function WhitelistForm() {
                               </p>
                             ) : state.detail ? (
                               <p className="mt-1 text-[7px] text-neon-pink">{state.detail}</p>
+                            ) : state.opened && !row.canAutoVerify ? (
+                              <p className="mt-1 text-[7px] uppercase tracking-wider text-zinc-500">
+                                {whitelist.social.likeOpenOnlyHint}
+                              </p>
                             ) : state.opened ? (
                               <p className="mt-1 text-[7px] uppercase tracking-wider text-zinc-500">
                                 {whitelist.social.openedHint}
@@ -404,19 +341,21 @@ export function WhitelistForm() {
                                 {whitelist.social.openCta}
                               </button>
                             )}
-                            <button
-                              type="button"
-                              disabled={!canVerify}
-                              className="neon-btn px-3 py-1.5 text-[7px] disabled:cursor-not-allowed disabled:opacity-40"
-                              onClick={() => void verifyAction(row.action)}
-                              onMouseEnter={playHover}
-                            >
-                              {state.busy
-                                ? whitelist.social.verifyingCta
-                                : state.verified
-                                  ? whitelist.social.verifiedBadge
-                                  : whitelist.social.verifyCta}
-                            </button>
+                            {row.canAutoVerify ? (
+                              <button
+                                type="button"
+                                disabled={!canVerify}
+                                className="neon-btn px-3 py-1.5 text-[7px] disabled:cursor-not-allowed disabled:opacity-40"
+                                onClick={() => void verifyAction(row.action)}
+                                onMouseEnter={playHover}
+                              >
+                                {state.busy
+                                  ? whitelist.social.verifyingCta
+                                  : state.verified
+                                    ? whitelist.social.verifiedBadge
+                                    : whitelist.social.verifyCta}
+                              </button>
+                            ) : null}
                           </div>
                         </div>
                       </li>
