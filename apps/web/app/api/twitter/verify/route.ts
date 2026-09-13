@@ -1,10 +1,15 @@
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import {
+  TWITTER_SESSION_COOKIE,
   getTwitterTargets,
   twitterBearerConfigured,
+  twitterConfigured,
+  unseal,
   verifyFollowByHandle,
-  verifyLikeByHandle,
+  verifyLike,
   verifyRetweetByHandle,
+  type TwitterSession,
 } from "@/lib/twitter";
 
 type Action = "follow" | "like" | "retweet";
@@ -15,17 +20,6 @@ function normalizeHandle(raw: unknown): string {
 }
 
 export async function POST(req: Request) {
-  if (!twitterBearerConfigured()) {
-    return NextResponse.json(
-      {
-        ok: false,
-        error:
-          "X verify not configured — add TWITTER_BEARER_TOKEN (App Bearer Token from console.x.com Keys).",
-      },
-      { status: 503 },
-    );
-  }
-
   const body = await req.json().catch(() => null);
   const action = body?.action as Action | undefined;
   const handle = normalizeHandle(body?.handle);
@@ -49,12 +43,53 @@ export async function POST(req: Request) {
 
   try {
     let result: { verified: boolean; detail: string };
-    if (action === "follow") {
-      result = await verifyFollowByHandle(handle, targetUsername);
-    } else if (action === "like") {
-      result = await verifyLikeByHandle(handle, targetTweetId);
+
+    if (action === "like") {
+      // Likes require OAuth user context — app bearer is forbidden by X.
+      if (!twitterConfigured()) {
+        return NextResponse.json(
+          { ok: false, verified: false, detail: "Connect X is not configured (TWITTER_CLIENT_ID / callback)." },
+          { status: 503 },
+        );
+      }
+      const jar = await cookies();
+      const raw = jar.get(TWITTER_SESSION_COOKIE)?.value;
+      const session = raw ? unseal<TwitterSession>(raw) : null;
+      if (!session?.accessToken || !session.user?.id) {
+        return NextResponse.json({
+          ok: true,
+          action,
+          verified: false,
+          detail: "Connect X to verify likes",
+          needsConnect: true,
+        });
+      }
+      const sessionHandle = session.user.username.replace(/^@/, "").toLowerCase();
+      if (sessionHandle !== handle.toLowerCase()) {
+        return NextResponse.json({
+          ok: true,
+          action,
+          verified: false,
+          detail: `Connected as @${session.user.username} but form handle is @${handle}. Match them, or reconnect.`,
+        });
+      }
+      result = await verifyLike(session.accessToken, session.user.id, targetTweetId);
     } else {
-      result = await verifyRetweetByHandle(handle, targetTweetId);
+      if (!twitterBearerConfigured()) {
+        return NextResponse.json(
+          {
+            ok: false,
+            error:
+              "X verify not configured — add TWITTER_BEARER_TOKEN (App Bearer Token from console.x.com Keys).",
+          },
+          { status: 503 },
+        );
+      }
+      if (action === "follow") {
+        result = await verifyFollowByHandle(handle, targetUsername);
+      } else {
+        result = await verifyRetweetByHandle(handle, targetTweetId);
+      }
     }
 
     return NextResponse.json({
