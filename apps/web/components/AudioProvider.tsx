@@ -34,45 +34,11 @@ function createAudioContextOrNull(): globalThis.AudioContext | null {
   return new AC();
 }
 
-/**
- * Chiptune / 8-bit UI blips — square-wave only, short envelopes.
- * Not loaded from files; synthesized in Web Audio (same idea as old consoles).
- */
-function chipBeep(
-  ctx: globalThis.AudioContext,
-  opts: {
-    freq: number;
-    endFreq?: number;
-    duration: number;
-    gain?: number;
-    type?: OscillatorType;
-  },
-) {
-  const now = ctx.currentTime;
-  const peak = opts.gain ?? 0.08;
-  const master = ctx.createGain();
-  master.connect(ctx.destination);
-  master.gain.setValueAtTime(0.0001, now);
-  master.gain.exponentialRampToValueAtTime(peak, now + 0.004);
-  master.gain.exponentialRampToValueAtTime(0.0001, now + opts.duration);
-
-  const osc = ctx.createOscillator();
-  osc.type = opts.type ?? "square";
-  osc.frequency.setValueAtTime(opts.freq, now);
-  if (opts.endFreq != null) {
-    osc.frequency.exponentialRampToValueAtTime(
-      Math.max(40, opts.endFreq),
-      now + opts.duration * 0.85,
-    );
-  }
-  osc.connect(master);
-  osc.start(now);
-  osc.stop(now + opts.duration + 0.02);
-}
-
 export function AudioProvider({ children }: { children: ReactNode }) {
   const ctxRef = useRef<globalThis.AudioContext | null>(null);
   const themeRef = useRef<HTMLAudioElement | null>(null);
+  const sfxBufferRef = useRef<AudioBuffer | null>(null);
+  const sfxLoadRef = useRef<Promise<AudioBuffer | null> | null>(null);
   const [muted, setMutedState] = useState(true);
   const hoverThrottle = useRef(0);
 
@@ -89,6 +55,45 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     }
     return ctx;
   }, []);
+
+  const ensureSfxBuffer = useCallback(async () => {
+    if (sfxBufferRef.current) return sfxBufferRef.current;
+    if (sfxLoadRef.current) return sfxLoadRef.current;
+
+    sfxLoadRef.current = (async () => {
+      const ctx = await ensureCtx();
+      if (!ctx) return null;
+      try {
+        const res = await fetch(site.assets.sfxClick);
+        if (!res.ok) return null;
+        const raw = await res.arrayBuffer();
+        const buffer = await ctx.decodeAudioData(raw.slice(0));
+        sfxBufferRef.current = buffer;
+        return buffer;
+      } catch {
+        return null;
+      }
+    })();
+
+    return sfxLoadRef.current;
+  }, [ensureCtx]);
+
+  const playSfx = useCallback(
+    async (gain: number) => {
+      const ctx = await ensureCtx();
+      if (!ctx) return;
+      const buffer = await ensureSfxBuffer();
+      if (!buffer) return;
+      const src = ctx.createBufferSource();
+      src.buffer = buffer;
+      const g = ctx.createGain();
+      g.gain.value = gain;
+      src.connect(g);
+      g.connect(ctx.destination);
+      src.start(0);
+    },
+    [ensureCtx, ensureSfxBuffer],
+  );
 
   const ensureTheme = useCallback(() => {
     if (typeof window === "undefined") return null;
@@ -142,48 +147,23 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     setMutedState(false);
     void (async () => {
       await ensureCtx();
+      void ensureSfxBuffer();
       await playTheme();
     })();
-  }, [ensureCtx, playTheme]);
+  }, [ensureCtx, ensureSfxBuffer, playTheme]);
 
-  /** Classic select / confirm blip */
+  /** Select / confirm — blipSelect.wav */
   const playClick = useCallback(() => {
-    void (async () => {
-      const ctx = await ensureCtx();
-      if (!ctx) return;
-      chipBeep(ctx, {
-        freq: 880,
-        endFreq: 660,
-        duration: 0.07,
-        gain: 0.09,
-        type: "square",
-      });
-      chipBeep(ctx, {
-        freq: 1320,
-        endFreq: 990,
-        duration: 0.045,
-        gain: 0.045,
-        type: "square",
-      });
-    })();
-  }, [ensureCtx]);
+    void playSfx(0.55);
+  }, [playSfx]);
 
-  /** Soft cursor / hover tick */
+  /** Softer cursor tick — same sample, quieter + throttled */
   const playHover = useCallback(() => {
     const now = performance.now();
     if (now - hoverThrottle.current < 160) return;
     hoverThrottle.current = now;
-    void (async () => {
-      const ctx = await ensureCtx();
-      if (!ctx) return;
-      chipBeep(ctx, {
-        freq: 1568,
-        duration: 0.022,
-        gain: 0.035,
-        type: "square",
-      });
-    })();
-  }, [ensureCtx]);
+    void playSfx(0.22);
+  }, [playSfx]);
 
   useEffect(() => {
     return () => {
