@@ -2,6 +2,7 @@
 
 import { site } from "@/content/site";
 import { MuteToggle, useAudio } from "./AudioProvider";
+import { RoadFrequency } from "./RoadFrequency";
 
 export function Hero() {
   const { playClick, playHover } = useAudio();
@@ -60,36 +61,10 @@ export function Hero() {
           </a>
         </div>
 
-        <div
-          className="perspective-road relative mt-16 mb-4 h-28 w-full max-w-2xl opacity-80 sm:mb-10 sm:h-36 md:mb-16"
-          aria-hidden
-        >
-          <div className="road-grid" />
-          <div className="road-static" />
-          <div className="road-waves">
-            <svg
-              className="road-wave-svg"
-              viewBox="0 0 640 80"
-              preserveAspectRatio="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                className="road-wave-path road-wave-path--cyan"
-                d="M0 40 C40 18 60 62 100 40 S160 18 200 40 260 62 300 40 360 18 400 40 460 62 500 40 560 18 600 40 640 55 640 40"
-                fill="none"
-              />
-              <path
-                className="road-wave-path road-wave-path--pink"
-                d="M0 44 C35 28 70 58 105 44 S175 28 210 44 280 58 315 44 385 28 420 44 490 58 525 44 595 28 640 44"
-                fill="none"
-              />
-              <path
-                className="road-wave-path road-wave-path--dim"
-                d="M0 48 Q80 36 160 48 T320 48 T480 48 T640 48"
-                fill="none"
-              />
-            </svg>
-          </div>
+        <div className="perspective-road relative mt-16 mb-4 h-28 w-full max-w-2xl opacity-80 sm:mb-10 sm:h-36 md:mb-16">
+          <div className="road-grid" aria-hidden />
+          <div className="road-static" aria-hidden />
+          <RoadFrequency className="road-waves" />
         </div>
       </div>
     </section>
