@@ -44,8 +44,8 @@ export const site = {
    * TWITTER_CALLBACK_URL, TWITTER_SESSION_SECRET (optional).
    */
   twitter: {
-    targetUsername: "", // e.g. "NightfallCity" (no @)
-    targetTweetId: "", // numeric status id from the tweet URL
+    targetUsername: "Cap0thed0n", // test account
+    targetTweetId: "2098957684603011567", // https://x.com/Cap0thed0n/status/2098957684603011567
   },
 
   whitelist: {
@@ -84,13 +84,17 @@ export const site = {
       eyebrow: "SIGNAL // TASKS",
       title: "Boost the frequency",
       subtitle:
-        "When the project account goes live, open each action and complete it on X. We review handles by hand.",
+        "Open each action on X, then hit Verify — we check the handle you entered against @Cap0thed0n / the test tweet.",
       comingSoon:
         "Project X + announcement tweet go live after art is locked. Open links light up here when targets are set.",
       followLabel: "Follow",
       likeLabel: "Like",
       retweetLabel: "Retweet",
       openCta: "Open",
+      verifyCta: "Verify",
+      verifyingCta: "Checking…",
+      verifiedBadge: "Verified",
+      needHandle: "Enter your X handle above first.",
       openedHint: "Opened",
     },
     submit: "Transmit Signal",
