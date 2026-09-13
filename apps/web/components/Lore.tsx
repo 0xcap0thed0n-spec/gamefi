@@ -7,7 +7,7 @@ export function Lore() {
   return (
     <section
       id={lore.id}
-      className="relative mx-auto max-w-3xl scroll-mt-24 px-4 py-16 sm:px-6 sm:py-20"
+      className="relative mx-auto max-w-3xl scroll-mt-24 px-4 py-16 sm:px-6 sm:pb-20 sm:pt-28 md:pt-36"
     >
       <div
         className="neon-panel-frame neon-card relative overflow-hidden p-6 sm:p-8"
