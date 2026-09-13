@@ -80,6 +80,8 @@ export const site = {
     walletInvalid: "Enter a valid 0x wallet address (40 hex characters).",
     handleHint: "Your public X username — with or without @.",
     handleInvalid: "Enter a valid X handle (letters, numbers, underscore).",
+    connectXCta: "Connect X",
+    xConnectedBadge: "Connected",
     social: {
       eyebrow: "SIGNAL // TASKS",
       title: "Boost the frequency",
@@ -96,6 +98,8 @@ export const site = {
       verifiedBadge: "Verified",
       needHandle: "Enter your X handle above first.",
       openedHint: "Opened",
+      connectXForLikes: "Connect X",
+      connectXForLikesHint: "Likes need a one-time X connect (Follow/RT use your handle only).",
     },
     submit: "Transmit Signal",
     submitting: "Transmitting...",
