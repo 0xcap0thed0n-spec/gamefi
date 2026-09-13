@@ -44,8 +44,8 @@ export const site = {
    * TWITTER_CALLBACK_URL, TWITTER_SESSION_SECRET (optional).
    */
   twitter: {
-    targetUsername: "Cap0thed0n", // test account
-    targetTweetId: "2098957684603011567", // https://x.com/Cap0thed0n/status/2098957684603011567
+    targetUsername: "D_Render", // test account
+    targetTweetId: "2098928097764483189", // https://x.com/D_Render/status/2098928097764483189
   },
 
   whitelist: {
@@ -84,7 +84,7 @@ export const site = {
       eyebrow: "SIGNAL // TASKS",
       title: "Boost the frequency",
       subtitle:
-        "Open each action on X, then hit Verify — we check the handle you entered against @Cap0thed0n / the test tweet.",
+        "Open each action on X, then hit Verify — we check the handle you entered against @D_Render / the test tweet.",
       comingSoon:
         "Project X + announcement tweet go live after art is locked. Open links light up here when targets are set.",
       followLabel: "Follow",
