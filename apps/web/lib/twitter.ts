@@ -224,15 +224,25 @@ async function userInPaginatedList(
   firstPath: string,
   accessToken: string,
   userId: string,
-  maxPages = 5,
-): Promise<boolean> {
+  maxPages = 10,
+): Promise<{ found: boolean; error?: string; scanned: number }> {
   let path: string | null = firstPath;
   let pages = 0;
+  let scanned = 0;
   while (path && pages < maxPages) {
-    const { ok, json } = await xGet(path, accessToken);
-    if (!ok) return false;
+    const { ok, status, json } = await xGet(path, accessToken);
+    if (!ok) {
+      return {
+        found: false,
+        scanned,
+        error: `List failed (${status}): ${xErrorDetail(json, status)}`,
+      };
+    }
     const data = (json.data as Array<{ id: string }> | undefined) || [];
-    if (data.some((u) => u.id === userId)) return true;
+    scanned += data.length;
+    if (data.some((u) => String(u.id) === String(userId))) {
+      return { found: true, scanned };
+    }
     const next = (json.meta as { next_token?: string } | undefined)?.next_token;
     if (!next) break;
     const base = firstPath.split("?")[0];
@@ -241,7 +251,7 @@ async function userInPaginatedList(
     path = `${base}?${params.toString()}`;
     pages += 1;
   }
-  return false;
+  return { found: false, scanned };
 }
 
 export async function verifyFollow(
@@ -274,14 +284,17 @@ export async function verifyFollow(
 
   // Fallback: page the applicant's following list (works with app bearer on pay-per-use).
   if (status === 404 || status === 403 || status === 405) {
-    const found = await userInPaginatedList(
+    const listed = await userInPaginatedList(
       `/users/${sourceUserId}/following?max_results=1000`,
       accessToken,
       targetId,
     );
+    if (listed.error) {
+      return { verified: false, detail: listed.error };
+    }
     return {
-      verified: found,
-      detail: found ? `Following @${clean}` : `Not following @${clean} yet`,
+      verified: listed.found,
+      detail: listed.found ? `Following @${clean}` : `Not following @${clean} yet`,
     };
   }
 
@@ -299,29 +312,20 @@ export async function verifyLike(
   if (!tweetId) {
     return { verified: false, detail: "Target tweet ID not configured in content/site.ts" };
   }
-  const inLikingUsers = await userInPaginatedList(
+  // App bearer: use tweet likers list (liked_tweets needs user OAuth and often 401s).
+  const listed = await userInPaginatedList(
     `/tweets/${tweetId}/liking_users?max_results=100`,
     accessToken,
     userId,
   );
-  if (inLikingUsers) return { verified: true, detail: "Liked the target tweet" };
-
-  let path: string | null = `/users/${userId}/liked_tweets?max_results=100`;
-  let pages = 0;
-  while (path && pages < 5) {
-    const { ok, json } = await xGet(path, accessToken);
-    if (!ok) break;
-    const data = (json.data as Array<{ id: string }> | undefined) || [];
-    if (data.some((t) => t.id === tweetId)) {
-      return { verified: true, detail: "Liked the target tweet" };
-    }
-    const next = (json.meta as { next_token?: string } | undefined)?.next_token;
-    if (!next) break;
-    path = `/users/${userId}/liked_tweets?max_results=100&pagination_token=${next}`;
-    pages += 1;
+  if (listed.error) {
+    return { verified: false, detail: listed.error };
   }
-
-  return { verified: false, detail: "Have not liked the target tweet yet" };
+  if (listed.found) return { verified: true, detail: "Liked the target tweet" };
+  return {
+    verified: false,
+    detail: `Have not liked the target tweet yet (scanned ${listed.scanned} likers)`,
+  };
 }
 
 export async function verifyRetweet(
@@ -332,14 +336,18 @@ export async function verifyRetweet(
   if (!tweetId) {
     return { verified: false, detail: "Target tweet ID not configured in content/site.ts" };
   }
-  const found = await userInPaginatedList(
+  const listed = await userInPaginatedList(
     `/tweets/${tweetId}/retweeted_by?max_results=100`,
     accessToken,
     userId,
   );
+  if (listed.error) {
+    return { verified: false, detail: listed.error };
+  }
+  if (listed.found) return { verified: true, detail: "Retweeted the target tweet" };
   return {
-    verified: found,
-    detail: found ? "Retweeted the target tweet" : "Have not retweeted the target tweet yet",
+    verified: false,
+    detail: `Have not retweeted the target tweet yet (scanned ${listed.scanned} reposts). Quote-posts do not count — use Repost.`,
   };
 }
 
