@@ -312,19 +312,39 @@ export async function verifyLike(
   if (!tweetId) {
     return { verified: false, detail: "Target tweet ID not configured in content/site.ts" };
   }
-  // App bearer: use tweet likers list (liked_tweets needs user OAuth and often 401s).
-  const listed = await userInPaginatedList(
-    `/tweets/${tweetId}/liking_users?max_results=100`,
-    accessToken,
-    userId,
-  );
-  if (listed.error) {
-    return { verified: false, detail: listed.error };
+  // Prefer liked_tweets (OAuth user context). App-only bearer is forbidden on liking_users.
+  let path: string | null = `/users/${userId}/liked_tweets?max_results=100`;
+  let pages = 0;
+  let scanned = 0;
+  let lastError = "";
+  while (path && pages < 10) {
+    const { ok, status, json } = await xGet(path, accessToken);
+    if (!ok) {
+      lastError = `Like check failed (${status}): ${xErrorDetail(json, status)}`;
+      break;
+    }
+    const data = (json.data as Array<{ id: string }> | undefined) || [];
+    scanned += data.length;
+    if (data.some((t) => String(t.id) === String(tweetId))) {
+      return { verified: true, detail: "Liked the target tweet" };
+    }
+    const next = (json.meta as { next_token?: string } | undefined)?.next_token;
+    if (!next) break;
+    path = `/users/${userId}/liked_tweets?max_results=100&pagination_token=${encodeURIComponent(next)}`;
+    pages += 1;
   }
-  if (listed.found) return { verified: true, detail: "Liked the target tweet" };
+  if (lastError) return { verified: false, detail: lastError };
   return {
     verified: false,
-    detail: `Have not liked the target tweet yet (scanned ${listed.scanned} likers)`,
+    detail: `Have not liked the target tweet yet (scanned ${scanned} liked posts)`,
+  };
+}
+
+/** Like verify for pasted handle — X forbids app-only on like endpoints. */
+export async function verifyLikeNeedsUserAuth(): Promise<{ verified: boolean; detail: string }> {
+  return {
+    verified: false,
+    detail: "Connect X to verify likes (X blocks app-only like checks).",
   };
 }
 
@@ -380,14 +400,10 @@ export async function verifyFollowByHandle(
 }
 
 export async function verifyLikeByHandle(
-  applicantHandle: string,
-  tweetId: string,
+  _applicantHandle: string,
+  _tweetId: string,
 ): Promise<{ verified: boolean; detail: string }> {
-  const bearer = twitterBearer();
-  if (!bearer) return { verified: false, detail: "TWITTER_BEARER_TOKEN not set on server" };
-  const looked = await resolveApplicantOrError(applicantHandle, bearer);
-  if ("error" in looked) return { verified: false, detail: looked.error ?? "Could not find that X handle" };
-  return verifyLike(bearer, looked.id, tweetId);
+  return verifyLikeNeedsUserAuth();
 }
 
 export async function verifyRetweetByHandle(
