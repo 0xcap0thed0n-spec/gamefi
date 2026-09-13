@@ -12,6 +12,7 @@ type FormState = {
 };
 
 type SocialAction = "follow" | "retweet" | "like";
+type Step = "tasks" | "details";
 
 type TaskState = {
   opened: boolean;
@@ -33,6 +34,7 @@ export function WhitelistForm() {
   const { whitelist, assets, twitter } = site;
   const { playClick, playHover } = useAudio();
 
+  const [step, setStep] = useState<Step>("tasks");
   const [values, setValues] = useState<FormState>(empty);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -51,6 +53,13 @@ export function WhitelistForm() {
   const walletOk = WALLET_RE.test(values.wallet.trim());
   const handle = normalizeHandle(values.twitter);
   const handleOk = HANDLE_RE.test(handle);
+
+  const tasksDone =
+    handleOk &&
+    (!followReady || tasks.follow.verified) &&
+    (!tweetReady || tasks.retweet.verified) &&
+    (!tweetReady || tasks.like.verified || tasks.like.opened);
+
   const canSubmit =
     walletOk && handleOk && values.reason.trim().length > 0 && status !== "submitting";
 
@@ -61,7 +70,7 @@ export function WhitelistForm() {
           action: "follow" as const,
           label: whitelist.social.followLabel,
           ready: followReady,
-          canAutoVerify: true,
+          softVerify: false,
           openHref: followReady
             ? `https://x.com/intent/follow?screen_name=${encodeURIComponent(targetUsername)}`
             : null,
@@ -71,7 +80,7 @@ export function WhitelistForm() {
           action: "retweet" as const,
           label: whitelist.social.retweetLabel,
           ready: tweetReady,
-          canAutoVerify: true,
+          softVerify: false,
           openHref: tweetReady
             ? `https://x.com/intent/retweet?tweet_id=${encodeURIComponent(targetTweetId)}`
             : null,
@@ -81,8 +90,8 @@ export function WhitelistForm() {
           action: "like" as const,
           label: whitelist.social.likeLabel,
           ready: tweetReady,
-          // X forbids app-only like checks — Open only, no Connect X required.
-          canAutoVerify: false,
+          // Mixels-style: Like Verify soft-passes (X blocks real app-only like checks).
+          softVerify: true,
           openHref: tweetReady
             ? `https://x.com/intent/like?tweet_id=${encodeURIComponent(targetTweetId)}`
             : null,
@@ -98,16 +107,38 @@ export function WhitelistForm() {
 
   function markOpened(action: SocialAction) {
     playClick();
-    setTasks((prev) => ({ ...prev, [action]: { ...prev[action], opened: true } }));
+    setTasks((prev) => {
+      const next = { ...prev[action], opened: true };
+      // Soft-verify Like on Open (mixels method).
+      if (action === "like") {
+        next.verified = true;
+        next.detail = "";
+      }
+      return { ...prev, [action]: next };
+    });
   }
 
-  async function verifyAction(action: SocialAction) {
-    if (action === "like") return;
+  async function verifyAction(action: SocialAction, softVerify: boolean) {
     if (!handleOk) {
       setErrorMsg(whitelist.social.needHandle);
       return;
     }
     playClick();
+
+    if (softVerify) {
+      setTasks((prev) => ({
+        ...prev,
+        [action]: {
+          ...prev[action],
+          opened: true,
+          verified: true,
+          busy: false,
+          detail: "",
+        },
+      }));
+      return;
+    }
+
     setTasks((prev) => ({
       ...prev,
       [action]: { ...prev[action], busy: true, detail: "" },
@@ -129,7 +160,7 @@ export function WhitelistForm() {
           ...prev[action],
           busy: false,
           verified: Boolean(payload.verified),
-          detail,
+          detail: payload.verified ? "" : detail,
         },
       }));
     } catch (err) {
@@ -145,9 +176,16 @@ export function WhitelistForm() {
     }
   }
 
+  function goDetails() {
+    if (!tasksDone) return;
+    playClick();
+    setErrorMsg("");
+    setStep("details");
+  }
+
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!walletOk || !handleOk || !values.reason.trim()) return;
+    if (!canSubmit) return;
     setStatus("submitting");
     setErrorMsg("");
     playClick();
@@ -181,6 +219,7 @@ export function WhitelistForm() {
     setValues(empty);
     setStatus("idle");
     setErrorMsg("");
+    setStep("tasks");
     setTasks({
       follow: { opened: false, verified: false, detail: "", busy: false },
       retweet: { opened: false, verified: false, detail: "", busy: false },
@@ -201,7 +240,7 @@ export function WhitelistForm() {
       >
         <div className="relative z-10">
           <p className="text-[8px] uppercase tracking-[0.3em] text-neon-cyan">
-            {whitelist.eyebrow}
+            {step === "tasks" ? whitelist.eyebrow : whitelist.stepDetailsEyebrow}
           </p>
           <h2 className="mt-4 text-sm uppercase tracking-wide text-white sm:text-base">
             {whitelist.title}
@@ -225,29 +264,8 @@ export function WhitelistForm() {
                 {whitelist.reset}
               </button>
             </div>
-          ) : (
-            <form className="mt-8 space-y-5" onSubmit={onSubmit}>
-              <label className="block space-y-2">
-                <span className="text-[8px] uppercase tracking-wider text-zinc-400">
-                  {whitelist.fields.wallet.label}
-                </span>
-                <input
-                  required
-                  name={whitelist.fields.wallet.name}
-                  value={values.wallet}
-                  onChange={(e) => onChange("wallet", e.target.value)}
-                  placeholder={whitelist.fields.wallet.placeholder}
-                  className="neon-input"
-                  autoComplete="off"
-                  spellCheck={false}
-                />
-                {values.wallet && !walletOk ? (
-                  <p className="text-[8px] text-neon-pink">{whitelist.walletInvalid}</p>
-                ) : (
-                  <p className="text-[7px] leading-relaxed text-zinc-500">{whitelist.walletHint}</p>
-                )}
-              </label>
-
+          ) : step === "tasks" ? (
+            <div className="mt-8 space-y-5">
               <label className="block space-y-2">
                 <span className="text-[8px] uppercase tracking-wider text-zinc-400">
                   {whitelist.fields.twitter.label}
@@ -290,7 +308,7 @@ export function WhitelistForm() {
                   {socialRows.map((row) => {
                     const state = tasks[row.action];
                     const canVerify =
-                      row.canAutoVerify && handleOk && row.ready && !state.busy && !state.verified;
+                      handleOk && row.ready && !state.busy && !state.verified;
                     return (
                       <li
                         key={row.action}
@@ -310,10 +328,6 @@ export function WhitelistForm() {
                               </p>
                             ) : state.detail ? (
                               <p className="mt-1 text-[7px] text-neon-pink">{state.detail}</p>
-                            ) : state.opened && !row.canAutoVerify ? (
-                              <p className="mt-1 text-[7px] uppercase tracking-wider text-zinc-500">
-                                {whitelist.social.likeOpenOnlyHint}
-                              </p>
                             ) : state.opened ? (
                               <p className="mt-1 text-[7px] uppercase tracking-wider text-zinc-500">
                                 {whitelist.social.openedHint}
@@ -341,21 +355,19 @@ export function WhitelistForm() {
                                 {whitelist.social.openCta}
                               </button>
                             )}
-                            {row.canAutoVerify ? (
-                              <button
-                                type="button"
-                                disabled={!canVerify}
-                                className="neon-btn px-3 py-1.5 text-[7px] disabled:cursor-not-allowed disabled:opacity-40"
-                                onClick={() => void verifyAction(row.action)}
-                                onMouseEnter={playHover}
-                              >
-                                {state.busy
-                                  ? whitelist.social.verifyingCta
-                                  : state.verified
-                                    ? whitelist.social.verifiedBadge
-                                    : whitelist.social.verifyCta}
-                              </button>
-                            ) : null}
+                            <button
+                              type="button"
+                              disabled={!canVerify}
+                              className="neon-btn px-3 py-1.5 text-[7px] disabled:cursor-not-allowed disabled:opacity-40"
+                              onClick={() => void verifyAction(row.action, row.softVerify)}
+                              onMouseEnter={playHover}
+                            >
+                              {state.busy
+                                ? whitelist.social.verifyingCta
+                                : state.verified
+                                  ? whitelist.social.verifiedBadge
+                                  : whitelist.social.verifyCta}
+                            </button>
                           </div>
                         </div>
                       </li>
@@ -363,6 +375,50 @@ export function WhitelistForm() {
                   })}
                 </ul>
               </div>
+
+              {errorMsg ? <p className="text-[8px] text-neon-pink">{errorMsg}</p> : null}
+              {!tasksDone ? (
+                <p className="text-center text-[7px] text-zinc-500">
+                  {whitelist.stepTasksNextBlocked}
+                </p>
+              ) : null}
+
+              <button
+                type="button"
+                disabled={!tasksDone}
+                className="neon-btn w-full disabled:cursor-not-allowed disabled:opacity-40"
+                onClick={goDetails}
+                onMouseEnter={playHover}
+              >
+                {whitelist.stepTasksNext}
+              </button>
+            </div>
+          ) : (
+            <form className="mt-8 space-y-5" onSubmit={onSubmit}>
+              <p className="text-[7px] uppercase tracking-wider text-neon-cyan">
+                @{handle}
+              </p>
+
+              <label className="block space-y-2">
+                <span className="text-[8px] uppercase tracking-wider text-zinc-400">
+                  {whitelist.fields.wallet.label}
+                </span>
+                <input
+                  required
+                  name={whitelist.fields.wallet.name}
+                  value={values.wallet}
+                  onChange={(e) => onChange("wallet", e.target.value)}
+                  placeholder={whitelist.fields.wallet.placeholder}
+                  className="neon-input"
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+                {values.wallet && !walletOk ? (
+                  <p className="text-[8px] text-neon-pink">{whitelist.walletInvalid}</p>
+                ) : (
+                  <p className="text-[7px] leading-relaxed text-zinc-500">{whitelist.walletHint}</p>
+                )}
+              </label>
 
               <label className="block space-y-2">
                 <span className="text-[8px] uppercase tracking-wider text-zinc-400">
@@ -397,14 +453,27 @@ export function WhitelistForm() {
                 <p className="text-center text-[7px] text-zinc-500">{whitelist.submitBlocked}</p>
               ) : null}
 
-              <button
-                type="submit"
-                disabled={!canSubmit}
-                className="neon-btn w-full disabled:cursor-not-allowed disabled:opacity-40"
-                onMouseEnter={playHover}
-              >
-                {status === "submitting" ? whitelist.submitting : whitelist.submit}
-              </button>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <button
+                  type="button"
+                  className="neon-btn-secondary w-full sm:w-auto"
+                  onClick={() => {
+                    playClick();
+                    setStep("tasks");
+                  }}
+                  onMouseEnter={playHover}
+                >
+                  {whitelist.stepDetailsBack}
+                </button>
+                <button
+                  type="submit"
+                  disabled={!canSubmit}
+                  className="neon-btn w-full flex-1 disabled:cursor-not-allowed disabled:opacity-40"
+                  onMouseEnter={playHover}
+                >
+                  {status === "submitting" ? whitelist.submitting : whitelist.submit}
+                </button>
+              </div>
 
               <p className="text-center text-[7px] leading-relaxed text-zinc-600">
                 {whitelist.privacyNote}
