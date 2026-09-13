@@ -86,7 +86,7 @@ export const site = {
       eyebrow: "SIGNAL // TASKS",
       title: "Boost the frequency",
       subtitle:
-        "Open each action on X, then hit Verify — we check the handle you entered against @D_Render / the test tweet.",
+        "Type your handle, open each action on X, then Verify Follow/RT. Like is Open-only (X blocks app-only like checks).",
       comingSoon:
         "Project X + announcement tweet go live after art is locked. Open links light up here when targets are set.",
       followLabel: "Follow",
@@ -98,8 +98,7 @@ export const site = {
       verifiedBadge: "Verified",
       needHandle: "Enter your X handle above first.",
       openedHint: "Opened",
-      connectXForLikes: "Connect X",
-      connectXForLikesHint: "Likes need a one-time X connect (Follow/RT use your handle only).",
+      likeOpenOnlyHint: "Open to like — auto-verify not available without Connect X",
     },
     submit: "Transmit Signal",
     submitting: "Transmitting...",
