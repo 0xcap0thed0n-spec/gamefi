@@ -53,7 +53,7 @@ export const site = {
     eyebrow: "ACCESS // WHITELIST",
     title: "Enter the Frequency",
     subtitle:
-      "Paste your wallet address, connect X, and tell us why Nightfall. Applications are reviewed by hand.",
+      "Paste your wallet, drop your X handle, and tell us why Nightfall. Applications are reviewed by hand.",
     fields: {
       wallet: {
         label: "Wallet address",
@@ -78,29 +78,24 @@ export const site = {
     },
     walletHint: "Paste a standard EVM address (0x + 40 hex). No wallet extension required.",
     walletInvalid: "Enter a valid 0x wallet address (40 hex characters).",
-    connectPrompt: "Paste your wallet and connect X to apply.",
-    connectXCta: "Connect X",
-    reconnectXCta: "Reconnect X",
-    xConnectedBadge: "Connected",
-    xNotConfigured: "Twitter not configured — add keys in .env.local (see .env.example).",
+    handleHint: "Your public X username — with or without @.",
+    handleInvalid: "Enter a valid X handle (letters, numbers, underscore).",
     social: {
       eyebrow: "SIGNAL // TASKS",
       title: "Boost the frequency",
-      subtitle: "Open each action, complete it on X, then hit Verify — same flow as the best allowlists.",
+      subtitle:
+        "When the project account goes live, open each action and complete it on X. We review handles by hand.",
       comingSoon:
-        "Project X + announcement tweet go live after art is locked. Open / Verify light up here when targets are set.",
+        "Project X + announcement tweet go live after art is locked. Open links light up here when targets are set.",
       followLabel: "Follow",
       likeLabel: "Like",
       retweetLabel: "Retweet",
       openCta: "Open",
-      verifyCta: "Verify",
-      verifyingCta: "Checking…",
-      verifiedBadge: "Verified",
-      needConnect: "Connect X first to verify these.",
+      openedHint: "Opened",
     },
     submit: "Transmit Signal",
     submitting: "Transmitting...",
-    submitBlocked: "Paste a valid wallet, connect X, and add a reason to submit.",
+    submitBlocked: "Paste a valid wallet, X handle, and reason to submit.",
     successTitle: "Signal received.",
     successBody:
       "You're in the review queue. Applications are read by hand — if it's a match, you'll hear from us on the frequency you gave.",
