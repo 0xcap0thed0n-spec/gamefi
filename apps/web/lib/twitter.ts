@@ -23,6 +23,16 @@ export function twitterConfigured(): boolean {
   return Boolean(process.env.TWITTER_CLIENT_ID && process.env.TWITTER_CALLBACK_URL);
 }
 
+/** App-only bearer for handle-based verify (no user OAuth). */
+export function twitterBearerConfigured(): boolean {
+  return Boolean((process.env.TWITTER_BEARER_TOKEN || "").trim());
+}
+
+export function twitterBearer(): string {
+  return (process.env.TWITTER_BEARER_TOKEN || "").trim();
+}
+
+
 export function twitterNotConfiguredResponse() {
   return {
     ok: false as const,
@@ -304,6 +314,48 @@ export async function verifyRetweet(
     verified: found,
     detail: found ? "Retweeted the target tweet" : "Have not retweeted the target tweet yet",
   };
+}
+
+
+/** Resolve username → id with app bearer (or user token). */
+export async function resolveUsernameWithToken(
+  username: string,
+  accessToken: string,
+): Promise<string | null> {
+  return resolveUsername(username, accessToken);
+}
+
+export async function verifyFollowByHandle(
+  applicantHandle: string,
+  targetUsername: string,
+): Promise<{ verified: boolean; detail: string }> {
+  const bearer = twitterBearer();
+  if (!bearer) return { verified: false, detail: "TWITTER_BEARER_TOKEN not set on server" };
+  const applicantId = await resolveUsername(applicantHandle, bearer);
+  if (!applicantId) return { verified: false, detail: "Could not find that X handle" };
+  return verifyFollow(bearer, applicantId, targetUsername);
+}
+
+export async function verifyLikeByHandle(
+  applicantHandle: string,
+  tweetId: string,
+): Promise<{ verified: boolean; detail: string }> {
+  const bearer = twitterBearer();
+  if (!bearer) return { verified: false, detail: "TWITTER_BEARER_TOKEN not set on server" };
+  const applicantId = await resolveUsername(applicantHandle, bearer);
+  if (!applicantId) return { verified: false, detail: "Could not find that X handle" };
+  return verifyLike(bearer, applicantId, tweetId);
+}
+
+export async function verifyRetweetByHandle(
+  applicantHandle: string,
+  tweetId: string,
+): Promise<{ verified: boolean; detail: string }> {
+  const bearer = twitterBearer();
+  if (!bearer) return { verified: false, detail: "TWITTER_BEARER_TOKEN not set on server" };
+  const applicantId = await resolveUsername(applicantHandle, bearer);
+  if (!applicantId) return { verified: false, detail: "Could not find that X handle" };
+  return verifyRetweet(bearer, applicantId, tweetId);
 }
 
 export function getTwitterTargets() {
