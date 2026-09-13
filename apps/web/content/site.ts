@@ -30,7 +30,6 @@ export const site = {
     eyebrow: "TRANSMISSION // LORE",
     title: "Nightfall City",
     body: [
-      "The city never left the 80s.",
       "Neon still bleeds across wet streets. The radio still spits static and coded jobs. When the frequency opens, freelancers answer.",
       "No names. No loyalties. Just the contract, the risk, and whatever's left when the night ends. Welcome to Nightfall City.",
     ],
@@ -86,7 +85,7 @@ export const site = {
       eyebrow: "SIGNAL // TASKS",
       title: "Boost the frequency",
       subtitle:
-        "Type your handle, open each action on X, then Verify Follow/RT. Like is Open-only (X blocks app-only like checks).",
+        "Enter your X handle, complete the tasks, then continue to wallet details.",
       comingSoon:
         "Project X + announcement tweet go live after art is locked. Open links light up here when targets are set.",
       followLabel: "Follow",
@@ -98,8 +97,12 @@ export const site = {
       verifiedBadge: "Verified",
       needHandle: "Enter your X handle above first.",
       openedHint: "Opened",
-      likeOpenOnlyHint: "Open to like — auto-verify not available without Connect X",
+      likeOpenOnlyHint: "Liked",
     },
+    stepTasksNext: "Next",
+    stepTasksNextBlocked: "Enter your handle and verify Follow + Repost first.",
+    stepDetailsBack: "Back",
+    stepDetailsEyebrow: "DETAILS // WALLET",
     submit: "Transmit Signal",
     submitting: "Transmitting...",
     submitBlocked: "Paste a valid wallet, X handle, and reason to submit.",
