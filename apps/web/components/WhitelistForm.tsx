@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { site } from "@/content/site";
 import { useAudio } from "./AudioProvider";
 
@@ -20,6 +20,8 @@ type TaskState = {
   busy: boolean;
 };
 
+type XUser = { id: string; username: string; name: string };
+
 const empty: FormState = { wallet: "", twitter: "", reason: "", referral: "" };
 
 const WALLET_RE = /^0x[a-fA-F0-9]{40}$/;
@@ -36,6 +38,7 @@ export function WhitelistForm() {
   const [values, setValues] = useState<FormState>(empty);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const [xUser, setXUser] = useState<XUser | null>(null);
   const [tasks, setTasks] = useState<Record<SocialAction, TaskState>>({
     follow: { opened: false, verified: false, detail: "", busy: false },
     retweet: { opened: false, verified: false, detail: "", busy: false },
@@ -92,6 +95,34 @@ export function WhitelistForm() {
     setValues((prev) => ({ ...prev, [key]: value }));
   }
 
+  const refreshMe = useCallback(async () => {
+    try {
+      const res = await fetch("/api/twitter/me", { credentials: "include" });
+      if (!res.ok) {
+        setXUser(null);
+        return;
+      }
+      const data = await res.json();
+      if (data?.user?.username) setXUser(data.user as XUser);
+      else setXUser(null);
+    } catch {
+      setXUser(null);
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshMe();
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("twitter") === "connected" || params.get("twitter_error")) {
+      void refreshMe();
+      params.delete("twitter");
+      params.delete("twitter_error");
+      const q = params.toString();
+      window.history.replaceState({}, "", `${window.location.pathname}${q ? `?${q}` : ""}${window.location.hash || "#whitelist"}`);
+    }
+  }, [refreshMe]);
+
   function markOpened(action: SocialAction) {
     playClick();
     setTasks((prev) => ({ ...prev, [action]: { ...prev[action], opened: true } }));
@@ -127,6 +158,9 @@ export function WhitelistForm() {
           detail,
         },
       }));
+      if (payload.needsConnect) {
+        setErrorMsg(detail);
+      }
     } catch (err) {
       setTasks((prev) => ({
         ...prev,
@@ -273,6 +307,34 @@ export function WhitelistForm() {
                   <p className="mt-2 text-[7px] leading-relaxed text-zinc-500">
                     {whitelist.social.subtitle}
                   </p>
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    {xUser ? (
+                      <p className="text-[7px] uppercase tracking-wider text-neon-cyan">
+                        {whitelist.xConnectedBadge} @{xUser.username}
+                      </p>
+                    ) : (
+                      <>
+                        <a
+                          href="/api/twitter/login"
+                          className="neon-btn-secondary px-3 py-1.5 text-[7px]"
+                          onClick={() => {
+                            try {
+                              sessionStorage.setItem("nf_oauth_return", "1");
+                            } catch {
+                              /* ignore */
+                            }
+                            playClick();
+                          }}
+                          onMouseEnter={playHover}
+                        >
+                          {whitelist.social.connectXForLikes}
+                        </a>
+                        <span className="text-[7px] leading-relaxed text-zinc-500">
+                          {whitelist.social.connectXForLikesHint}
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </div>
 
                 {!socialLive ? (
