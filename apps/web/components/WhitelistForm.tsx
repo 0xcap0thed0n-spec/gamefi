@@ -15,6 +15,9 @@ type SocialAction = "follow" | "retweet" | "like";
 
 type TaskState = {
   opened: boolean;
+  verified: boolean;
+  detail: string;
+  busy: boolean;
 };
 
 const empty: FormState = { wallet: "", twitter: "", reason: "", referral: "" };
@@ -34,9 +37,9 @@ export function WhitelistForm() {
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [tasks, setTasks] = useState<Record<SocialAction, TaskState>>({
-    follow: { opened: false },
-    retweet: { opened: false },
-    like: { opened: false },
+    follow: { opened: false, verified: false, detail: "", busy: false },
+    retweet: { opened: false, verified: false, detail: "", busy: false },
+    like: { opened: false, verified: false, detail: "", busy: false },
   });
 
   const targetUsername = twitter.targetUsername.replace(/^@/, "");
@@ -91,7 +94,50 @@ export function WhitelistForm() {
 
   function markOpened(action: SocialAction) {
     playClick();
-    setTasks((prev) => ({ ...prev, [action]: { opened: true } }));
+    setTasks((prev) => ({ ...prev, [action]: { ...prev[action], opened: true } }));
+  }
+
+  async function verifyAction(action: SocialAction) {
+    if (!handleOk) {
+      setErrorMsg(whitelist.social.needHandle);
+      return;
+    }
+    playClick();
+    setTasks((prev) => ({
+      ...prev,
+      [action]: { ...prev[action], busy: true, detail: "" },
+    }));
+    try {
+      const res = await fetch("/api/twitter/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, handle }),
+      });
+      const payload = await res.json().catch(() => ({}));
+      const detail =
+        (typeof payload.detail === "string" && payload.detail) ||
+        (typeof payload.error === "string" && payload.error) ||
+        (res.ok ? "Done" : "Verification failed");
+      setTasks((prev) => ({
+        ...prev,
+        [action]: {
+          ...prev[action],
+          busy: false,
+          verified: Boolean(payload.verified),
+          detail,
+        },
+      }));
+    } catch (err) {
+      setTasks((prev) => ({
+        ...prev,
+        [action]: {
+          ...prev[action],
+          busy: false,
+          verified: false,
+          detail: err instanceof Error ? err.message : "Verification failed",
+        },
+      }));
+    }
   }
 
   async function onSubmit(e: FormEvent) {
@@ -130,7 +176,11 @@ export function WhitelistForm() {
     setValues(empty);
     setStatus("idle");
     setErrorMsg("");
-    setTasks({ follow: { opened: false }, retweet: { opened: false }, like: { opened: false } });
+    setTasks({
+      follow: { opened: false, verified: false, detail: "", busy: false },
+      retweet: { opened: false, verified: false, detail: "", busy: false },
+      like: { opened: false, verified: false, detail: "", busy: false },
+    });
   }
 
   return (
@@ -234,6 +284,7 @@ export function WhitelistForm() {
                 <ul className="space-y-2">
                   {socialRows.map((row) => {
                     const state = tasks[row.action];
+                    const canVerify = handleOk && row.ready && !state.busy && !state.verified;
                     return (
                       <li
                         key={row.action}
@@ -247,8 +298,14 @@ export function WhitelistForm() {
                                 {row.hint}
                               </span>
                             </p>
-                            {state.opened ? (
+                            {state.verified ? (
                               <p className="mt-1 text-[7px] uppercase tracking-wider text-neon-cyan">
+                                {whitelist.social.verifiedBadge}
+                              </p>
+                            ) : state.detail ? (
+                              <p className="mt-1 text-[7px] text-neon-pink">{state.detail}</p>
+                            ) : state.opened ? (
+                              <p className="mt-1 text-[7px] uppercase tracking-wider text-zinc-500">
                                 {whitelist.social.openedHint}
                               </p>
                             ) : null}
@@ -274,6 +331,19 @@ export function WhitelistForm() {
                                 {whitelist.social.openCta}
                               </button>
                             )}
+                            <button
+                              type="button"
+                              disabled={!canVerify}
+                              className="neon-btn px-3 py-1.5 text-[7px] disabled:cursor-not-allowed disabled:opacity-40"
+                              onClick={() => void verifyAction(row.action)}
+                              onMouseEnter={playHover}
+                            >
+                              {state.busy
+                                ? whitelist.social.verifyingCta
+                                : state.verified
+                                  ? whitelist.social.verifiedBadge
+                                  : whitelist.social.verifyCta}
+                            </button>
                           </div>
                         </div>
                       </li>
