@@ -52,7 +52,9 @@ export function WhitelistForm() {
   const socialLive = followReady || tweetReady;
 
   const walletOk = WALLET_RE.test(values.wallet.trim());
-  const handle = normalizeHandle(values.twitter);
+  const typedHandle = normalizeHandle(values.twitter);
+  const connectedHandle = xUser ? normalizeHandle(xUser.username) : "";
+  const handle = typedHandle || connectedHandle;
   const handleOk = HANDLE_RE.test(handle);
   const canSubmit =
     walletOk && handleOk && values.reason.trim().length > 0 && status !== "submitting";
@@ -103,8 +105,12 @@ export function WhitelistForm() {
         return;
       }
       const data = await res.json();
-      if (data?.user?.username) setXUser(data.user as XUser);
-      else setXUser(null);
+      if (data?.user?.username) {
+        const user = data.user as XUser;
+        setXUser(user);
+        // Connected account owns the handle — autofill / keep in sync.
+        setValues((prev) => ({ ...prev, twitter: `@${user.username}` }));
+      } else setXUser(null);
     } catch {
       setXUser(null);
     }
@@ -284,14 +290,19 @@ export function WhitelistForm() {
                 <input
                   required
                   name={whitelist.fields.twitter.name}
-                  value={values.twitter}
+                  value={values.twitter || (xUser ? `@${xUser.username}` : "")}
                   onChange={(e) => onChange("twitter", e.target.value)}
                   placeholder={whitelist.fields.twitter.placeholder}
                   className="neon-input"
                   autoComplete="off"
                   spellCheck={false}
+                  readOnly={Boolean(xUser)}
                 />
-                {values.twitter && !handleOk ? (
+                {xUser ? (
+                  <p className="text-[7px] leading-relaxed text-neon-cyan">
+                    Filled from Connect X — @{xUser.username}
+                  </p>
+                ) : values.twitter && !handleOk ? (
                   <p className="text-[8px] text-neon-pink">{whitelist.handleInvalid}</p>
                 ) : (
                   <p className="text-[7px] leading-relaxed text-zinc-500">{whitelist.handleHint}</p>
