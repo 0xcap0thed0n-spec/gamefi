@@ -257,6 +257,8 @@ export async function verifyFollow(
   if (!targetId) {
     return { verified: false, detail: `Could not resolve @${clean}` };
   }
+
+  // Direct relationship lookup — some app tiers return 405 Method Not Allowed.
   const { ok, json, status } = await xGet(
     `/users/${sourceUserId}/following/${targetId}`,
     accessToken,
@@ -269,7 +271,9 @@ export async function verifyFollow(
       detail: following ? `Following @${clean}` : `Not following @${clean} yet`,
     };
   }
-  if (status === 404 || status === 403) {
+
+  // Fallback: page the applicant's following list (works with app bearer on pay-per-use).
+  if (status === 404 || status === 403 || status === 405) {
     const found = await userInPaginatedList(
       `/users/${sourceUserId}/following?max_results=1000`,
       accessToken,
@@ -280,8 +284,11 @@ export async function verifyFollow(
       detail: found ? `Following @${clean}` : `Not following @${clean} yet`,
     };
   }
-  const title = (json.title as string) || (json.detail as string) || "Follow check failed";
-  return { verified: false, detail: title };
+
+  return {
+    verified: false,
+    detail: `Follow check failed (${status}): ${xErrorDetail(json, status)}`,
+  };
 }
 
 export async function verifyLike(
