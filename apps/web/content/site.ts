@@ -80,7 +80,7 @@ export const site = {
       eyebrow: "SIGNAL // TASKS",
       title: "Boost the frequency",
       subtitle:
-        "Enter your X handle, then Follow / Repost / Like+Comment. Like is honor-system; Comment Verify is automatic.",
+        "Enter your X handle, then Follow / Repost / Like + Comment.",
       comingSoon:
         "Project X + announcement tweet go live after art is locked. Open links light up here when targets are set.",
       followLabel: "Follow",
@@ -92,7 +92,7 @@ export const site = {
       verifiedBadge: "Verified",
       needHandle: "Enter your X handle above first.",
       openedHint: "Opened",
-      likeOpenOnlyHint: "Like the post (honor system) and leave a reply, then Verify.",
+      likeOpenOnlyHint: "Like the post and leave a reply, then Verify.",
     },
     stepTasksNext: "Next",
     stepTasksNextBlocked: "Enter your handle and verify Follow, Repost, and Like + Comment first.",
