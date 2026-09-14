@@ -8,7 +8,6 @@ type FormState = {
   wallet: string;
   twitter: string;
   reason: string;
-  referral: string;
 };
 
 type SocialAction = "follow" | "retweet" | "like";
@@ -21,7 +20,7 @@ type TaskState = {
   busy: boolean;
 };
 
-const empty: FormState = { wallet: "", twitter: "", reason: "", referral: "" };
+const empty: FormState = { wallet: "", twitter: "", reason: "" };
 
 const WALLET_RE = /^0x[a-fA-F0-9]{40}$/;
 const HANDLE_RE = /^[A-Za-z0-9_]{1,15}$/;
@@ -198,7 +197,6 @@ export function WhitelistForm() {
           twitter: `@${handle}`,
           wallet: values.wallet.trim(),
           reason: values.reason,
-          referral: values.referral || undefined,
         }),
       });
 
@@ -435,18 +433,6 @@ export function WhitelistForm() {
                 />
               </label>
 
-              <label className="block space-y-2">
-                <span className="text-[8px] uppercase tracking-wider text-zinc-400">
-                  {whitelist.fields.referral.label}
-                </span>
-                <input
-                  name={whitelist.fields.referral.name}
-                  value={values.referral}
-                  onChange={(e) => onChange("referral", e.target.value)}
-                  placeholder={whitelist.fields.referral.placeholder}
-                  className="neon-input"
-                />
-              </label>
 
               {errorMsg ? <p className="text-[8px] text-neon-pink">{errorMsg}</p> : null}
               {!canSubmit && status !== "submitting" ? (
