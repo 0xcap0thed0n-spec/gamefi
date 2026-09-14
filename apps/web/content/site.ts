@@ -92,7 +92,7 @@ export const site = {
       verifiedBadge: "Verified",
       needHandle: "Enter your X handle above first.",
       openedHint: "Opened",
-      likeOpenOnlyHint: "Like the post and leave a reply, then Verify.",
+      likeOpenOnlyHint: "On that post: like it, reply in the thread, then Verify.",
     },
     stepTasksNext: "Next",
     stepTasksNextBlocked: "Enter your handle and verify Follow, Repost, and Like + Comment first.",
