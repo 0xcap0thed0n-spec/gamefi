@@ -57,7 +57,7 @@ export function WhitelistForm() {
     handleOk &&
     (!followReady || tasks.follow.verified) &&
     (!tweetReady || tasks.retweet.verified) &&
-    (!tweetReady || tasks.like.verified || tasks.like.opened);
+    (!tweetReady || tasks.like.verified);
 
   const canSubmit =
     walletOk && handleOk && values.reason.trim().length > 0 && status !== "submitting";
@@ -89,10 +89,10 @@ export function WhitelistForm() {
           action: "like" as const,
           label: whitelist.social.likeLabel,
           ready: tweetReady,
-          // Mixels-style: Like Verify soft-passes (X blocks real app-only like checks).
-          softVerify: true,
+          // Like is honor-system; Verify checks the comment via Bearer (no Connect X).
+          softVerify: false,
           openHref: tweetReady
-            ? `https://x.com/intent/like?tweet_id=${encodeURIComponent(targetTweetId)}`
+            ? `https://x.com/intent/tweet?in_reply_to=${encodeURIComponent(targetTweetId)}`
             : null,
           hint: "post",
         },
@@ -106,15 +106,17 @@ export function WhitelistForm() {
 
   function markOpened(action: SocialAction) {
     playClick();
-    setTasks((prev) => {
-      const next = { ...prev[action], opened: true };
-      // Soft-verify Like on Open (mixels method).
-      if (action === "like") {
-        next.verified = true;
-        next.detail = "";
-      }
-      return { ...prev, [action]: next };
-    });
+    setTasks((prev) => ({
+      ...prev,
+      [action]: {
+        ...prev[action],
+        opened: true,
+        detail:
+          action === "like" && !prev[action].verified
+            ? whitelist.social.likeOpenOnlyHint
+            : prev[action].detail,
+      },
+    }));
   }
 
   async function verifyAction(action: SocialAction, softVerify: boolean) {
