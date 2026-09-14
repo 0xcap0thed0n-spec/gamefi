@@ -91,8 +91,9 @@ export function WhitelistForm() {
           ready: tweetReady,
           // Verify checks the comment via Bearer (no Connect X).
           softVerify: false,
+          // Open the real status page — X reply-intent often drops in_reply_to and posts a normal tweet.
           openHref: tweetReady
-            ? `https://x.com/intent/tweet?in_reply_to=${encodeURIComponent(targetTweetId)}`
+            ? `https://x.com/${encodeURIComponent(targetUsername)}/status/${encodeURIComponent(targetTweetId)}`
             : null,
           hint: "post",
         },
