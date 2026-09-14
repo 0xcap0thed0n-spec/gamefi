@@ -59,11 +59,7 @@ export async function POST(req: Request) {
       ok: true,
       action,
       verified: result.verified,
-      // Like itself stays honor-system; Verify on the Like+Comment row checks the comment.
-      detail:
-        action === "like" && result.verified
-          ? `${result.detail} (like is honor-system)`
-          : result.detail,
+      detail: result.detail,
     });
   } catch (err) {
     const detail = err instanceof Error ? err.message : "Verification failed";
