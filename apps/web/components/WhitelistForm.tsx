@@ -89,7 +89,7 @@ export function WhitelistForm() {
           action: "like" as const,
           label: whitelist.social.likeLabel,
           ready: tweetReady,
-          // Like is honor-system; Verify checks the comment via Bearer (no Connect X).
+          // Verify checks the comment via Bearer (no Connect X).
           softVerify: false,
           openHref: tweetReady
             ? `https://x.com/intent/tweet?in_reply_to=${encodeURIComponent(targetTweetId)}`
