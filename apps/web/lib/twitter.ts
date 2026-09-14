@@ -417,6 +417,100 @@ export async function verifyRetweetByHandle(
   return verifyRetweet(bearer, looked.id, tweetId);
 }
 
+
+export async function verifyComment(
+  accessToken: string,
+  userId: string,
+  tweetId: string,
+  applicantHandle: string,
+): Promise<{ verified: boolean; detail: string }> {
+  if (!tweetId) {
+    return { verified: false, detail: "Target tweet ID not configured in content/site.ts" };
+  }
+  const handle = applicantHandle.replace(/^@/, "").trim();
+  let searchError = "";
+
+  // 1) Recent search — app Bearer OK; catches replies from roughly the last 7 days.
+  const q = `conversation_id:${tweetId} from:${handle} is:reply`;
+  const searchPath =
+    `/tweets/search/recent?query=${encodeURIComponent(q)}` +
+    `&max_results=10&tweet.fields=author_id,conversation_id,referenced_tweets,created_at`;
+  const searched = await xGet(searchPath, accessToken);
+  if (searched.ok) {
+    const data = (searched.json.data as Array<{ id: string }> | undefined) || [];
+    if (data.length > 0) {
+      return { verified: true, detail: "Comment found on the target post" };
+    }
+  } else {
+    searchError = `Search (${searched.status}): ${xErrorDetail(searched.json, searched.status)}`;
+  }
+
+  // 2) Fallback: scan applicant's recent posts for a reply in this conversation.
+  let path: string | null =
+    `/users/${userId}/tweets?max_results=100&exclude=retweets` +
+    `&tweet.fields=conversation_id,referenced_tweets,created_at`;
+  let pages = 0;
+  let scanned = 0;
+  let lastError = searchError;
+  while (path && pages < 5) {
+    const { ok, status, json } = await xGet(path, accessToken);
+    if (!ok) {
+      lastError =
+        `Timeline check failed (${status}): ${xErrorDetail(json, status)}` +
+        (lastError ? ` · ${lastError}` : "");
+      break;
+    }
+    const data =
+      (json.data as
+        | Array<{
+            id: string;
+            conversation_id?: string;
+            referenced_tweets?: Array<{ type: string; id: string }>;
+          }>
+        | undefined) || [];
+    scanned += data.length;
+    const hit = data.some((t) => {
+      if (String(t.conversation_id) === String(tweetId)) return true;
+      return (t.referenced_tweets || []).some(
+        (r) => r.type === "replied_to" && String(r.id) === String(tweetId),
+      );
+    });
+    if (hit) {
+      return { verified: true, detail: "Comment found on the target post" };
+    }
+    const next = (json.meta as { next_token?: string } | undefined)?.next_token;
+    if (!next) break;
+    path =
+      `/users/${userId}/tweets?max_results=100&exclude=retweets` +
+      `&tweet.fields=conversation_id,referenced_tweets,created_at` +
+      `&pagination_token=${encodeURIComponent(next)}`;
+    pages += 1;
+  }
+
+  if (lastError && scanned === 0) {
+    return { verified: false, detail: lastError };
+  }
+  return {
+    verified: false,
+    detail:
+      `No comment from @${handle} on that post yet (scanned ${scanned} recent posts). ` +
+      `Reply on the post, wait a few seconds, then Verify again.`,
+  };
+}
+
+export async function verifyCommentByHandle(
+  applicantHandle: string,
+  tweetId: string,
+): Promise<{ verified: boolean; detail: string }> {
+  const bearer = twitterBearer();
+  if (!bearer) return { verified: false, detail: "TWITTER_BEARER_TOKEN not set on server" };
+  const looked = await resolveApplicantOrError(applicantHandle, bearer);
+  if ("error" in looked) {
+    return { verified: false, detail: looked.error ?? "Could not find that X handle" };
+  }
+  return verifyComment(bearer, looked.id, tweetId, applicantHandle);
+}
+
 export function getTwitterTargets() {
   return {
     targetUsername: site.twitter.targetUsername,
