@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import {
   getTwitterTargets,
   twitterBearerConfigured,
+  verifyCommentByHandle,
   verifyFollowByHandle,
   verifyRetweetByHandle,
 } from "@/lib/twitter";
@@ -38,20 +39,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "Valid X handle required" }, { status: 400 });
   }
 
-  if (action === "like") {
-    return NextResponse.json({
-      ok: true,
-      action,
-      verified: false,
-      detail: "Like auto-verify needs Connect X; use Open only for likes.",
-    });
-  }
-
   const { targetUsername, targetTweetId } = getTwitterTargets();
   if (action === "follow" && !targetUsername) {
     return NextResponse.json({ ok: false, error: "Follow target not configured" }, { status: 400 });
   }
-  if (action === "retweet" && !targetTweetId) {
+  if ((action === "retweet" || action === "like") && !targetTweetId) {
     return NextResponse.json({ ok: false, error: "Tweet target not configured" }, { status: 400 });
   }
 
@@ -59,13 +51,19 @@ export async function POST(req: Request) {
     const result =
       action === "follow"
         ? await verifyFollowByHandle(handle, targetUsername)
-        : await verifyRetweetByHandle(handle, targetTweetId);
+        : action === "retweet"
+          ? await verifyRetweetByHandle(handle, targetTweetId)
+          : await verifyCommentByHandle(handle, targetTweetId);
 
     return NextResponse.json({
       ok: true,
       action,
       verified: result.verified,
-      detail: result.detail,
+      // Like itself stays honor-system; Verify on the Like+Comment row checks the comment.
+      detail:
+        action === "like" && result.verified
+          ? `${result.detail} (like is honor-system)`
+          : result.detail,
     });
   } catch (err) {
     const detail = err instanceof Error ? err.message : "Verification failed";
