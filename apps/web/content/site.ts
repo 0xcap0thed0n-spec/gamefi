@@ -52,7 +52,7 @@ export const site = {
     eyebrow: "ACCESS // WHITELIST",
     title: "Enter the Frequency",
     subtitle:
-      "Paste your wallet, drop your X handle, and tell us why Nightfall. Applications are reviewed by hand.",
+      "Drop your X handle, tell us why Nightfall, then paste your wallet. Applications are reviewed by hand.",
     fields: {
       wallet: {
         label: "Wallet address",
@@ -68,11 +68,6 @@ export const site = {
         label: "Why Nightfall?",
         placeholder: "One short line — keep it sharp.",
         name: "reason",
-      },
-      referral: {
-        label: "Referral (optional)",
-        placeholder: "Who sent you?",
-        name: "referral",
       },
     },
     walletHint: "Paste a standard EVM address (0x + 40 hex). No wallet extension required.",
