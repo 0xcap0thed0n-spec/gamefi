@@ -11,6 +11,9 @@ import {
   type ReactNode,
 } from "react";
 import { site } from "@/content/site";
+import { playSound } from "@/lib/sound-engine";
+import { select007Sound } from "@/sounds/select-007";
+import { back003Sound } from "@/sounds/back-003";
 
 type AudioApi = {
   muted: boolean;
@@ -20,80 +23,15 @@ type AudioApi = {
   startImmersiveTheme: () => void;
   playClick: () => void;
   playHover: () => void;
+  playBack: () => void;
 };
 
 const NightfallAudioContext = createContext<AudioApi | null>(null);
 
-function createAudioContextOrNull(): globalThis.AudioContext | null {
-  if (typeof window === "undefined") return null;
-  const AC =
-    window.AudioContext ||
-    (window as unknown as { webkitAudioContext: typeof globalThis.AudioContext })
-      .webkitAudioContext;
-  if (!AC) return null;
-  return new AC();
-}
-
 export function AudioProvider({ children }: { children: ReactNode }) {
-  const ctxRef = useRef<globalThis.AudioContext | null>(null);
   const themeRef = useRef<HTMLAudioElement | null>(null);
-  const sfxBufferRef = useRef<AudioBuffer | null>(null);
-  const sfxLoadRef = useRef<Promise<AudioBuffer | null> | null>(null);
   const [muted, setMutedState] = useState(true);
   const hoverThrottle = useRef(0);
-
-  const ensureCtx = useCallback(async () => {
-    if (!ctxRef.current) ctxRef.current = createAudioContextOrNull();
-    const ctx = ctxRef.current;
-    if (!ctx) return null;
-    if (ctx.state === "suspended") {
-      try {
-        await ctx.resume();
-      } catch {
-        /* ignore autoplay blocks */
-      }
-    }
-    return ctx;
-  }, []);
-
-  const ensureSfxBuffer = useCallback(async () => {
-    if (sfxBufferRef.current) return sfxBufferRef.current;
-    if (sfxLoadRef.current) return sfxLoadRef.current;
-
-    sfxLoadRef.current = (async () => {
-      const ctx = await ensureCtx();
-      if (!ctx) return null;
-      try {
-        const res = await fetch(site.assets.sfxClick);
-        if (!res.ok) return null;
-        const raw = await res.arrayBuffer();
-        const buffer = await ctx.decodeAudioData(raw.slice(0));
-        sfxBufferRef.current = buffer;
-        return buffer;
-      } catch {
-        return null;
-      }
-    })();
-
-    return sfxLoadRef.current;
-  }, [ensureCtx]);
-
-  const playSfx = useCallback(
-    async (gain: number) => {
-      const ctx = await ensureCtx();
-      if (!ctx) return;
-      const buffer = await ensureSfxBuffer();
-      if (!buffer) return;
-      const src = ctx.createBufferSource();
-      src.buffer = buffer;
-      const g = ctx.createGain();
-      g.gain.value = gain;
-      src.connect(g);
-      g.connect(ctx.destination);
-      src.start(0);
-    },
-    [ensureCtx, ensureSfxBuffer],
-  );
 
   const ensureTheme = useCallback(() => {
     if (typeof window === "undefined") return null;
@@ -142,20 +80,28 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     setMuted(!muted);
   }, [muted, setMuted]);
 
-  /** Call from a click/key gesture so browsers allow audio. */
   const startImmersiveTheme = useCallback(() => {
     setMutedState(false);
-    void (async () => {
-      await ensureCtx();
-      
-      await playTheme();
-    })();
-  }, [ensureCtx, ensureSfxBuffer, playTheme]);
+    void playTheme();
+  }, [playTheme]);
 
-  /** UI SFX paused until better clips land */
-  const playClick = useCallback(() => {}, []);
+  /** Primary UI click — soundcn select-007 */
+  const playClick = useCallback(() => {
+    void playSound(select007Sound.dataUri, { volume: 0.55 });
+  }, []);
 
-  const playHover = useCallback(() => {}, []);
+  /** Soft hover tick — quieter select */
+  const playHover = useCallback(() => {
+    const now = performance.now();
+    if (now - hoverThrottle.current < 160) return;
+    hoverThrottle.current = now;
+    void playSound(select007Sound.dataUri, { volume: 0.22 });
+  }, []);
+
+  /** Back / close — soundcn back-003 */
+  const playBack = useCallback(() => {
+    void playSound(back003Sound.dataUri, { volume: 0.5 });
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -164,7 +110,6 @@ export function AudioProvider({ children }: { children: ReactNode }) {
         themeRef.current.src = "";
         themeRef.current = null;
       }
-      void ctxRef.current?.close();
     };
   }, [pauseTheme]);
 
@@ -176,8 +121,9 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       startImmersiveTheme,
       playClick,
       playHover,
+      playBack,
     }),
-    [muted, setMuted, toggleMute, startImmersiveTheme, playClick, playHover],
+    [muted, setMuted, toggleMute, startImmersiveTheme, playClick, playHover, playBack],
   );
 
   return (
@@ -195,6 +141,7 @@ export function useAudio() {
       startImmersiveTheme: () => {},
       playClick: () => {},
       playHover: () => {},
+      playBack: () => {},
     } satisfies AudioApi;
   }
   return ctx;
