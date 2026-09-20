@@ -633,8 +633,13 @@ html:not(.nf-booted) footer {
   background-size: 100% 100%;
   background-position: center;
   background-repeat: no-repeat;
-  color: #051018 !important;
-  text-shadow: 0 0 8px rgba(0, 245, 255, 0.35);
+  /* Sized for the art label baked into the PNG (no HTML text overlay). */
+  min-width: 13.5rem;
+  min-height: 3.25rem;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+  color: transparent !important;
+  text-shadow: none;
   box-shadow:
     0 0 18px rgba(0, 245, 255, 0.45),
     inset 0 0 12px rgba(0, 245, 255, 0.15) !important;
