@@ -31,7 +31,7 @@ function normalizeHandle(raw: string): string {
 
 export function WhitelistForm() {
   const { whitelist, assets, twitter } = site;
-  const { playClick, playHover } = useAudio();
+  const { playClick, playHover, playBack } = useAudio();
 
   const [step, setStep] = useState<Step>("tasks");
   const [values, setValues] = useState<FormState>(empty);
@@ -449,7 +449,7 @@ export function WhitelistForm() {
                   type="button"
                   className="neon-btn-secondary w-full sm:w-auto"
                   onClick={() => {
-                    playClick();
+                    playBack();
                     setStep("tasks");
                   }}
                   onMouseEnter={playHover}
