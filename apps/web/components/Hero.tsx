@@ -3,6 +3,7 @@
 import { site } from "@/content/site";
 import { MuteToggle, useAudio } from "./AudioProvider";
 import { RoadFrequency } from "./RoadFrequency";
+import { SiteMenu } from "./SiteMenu";
 
 export function Hero() {
   const { playClick, playHover } = useAudio();
@@ -20,7 +21,10 @@ export function Hero() {
           >
             {site.hero.badge}
           </span>
-          <MuteToggle />
+          <div className="flex items-center gap-2">
+            <SiteMenu />
+            <MuteToggle />
+          </div>
         </div>
 
         <div className="mb-6 flex flex-col items-center sm:mb-8">
@@ -47,8 +51,9 @@ export function Hero() {
             }}
             onClick={playClick}
             onMouseEnter={playHover}
+            aria-label="Apply — Enter the Frequency"
           >
-            {site.hero.ctaPrimary}
+            <span className="sr-only">Apply</span>
           </a>
           <a
             href={site.hero.ctaSecondaryHref}
