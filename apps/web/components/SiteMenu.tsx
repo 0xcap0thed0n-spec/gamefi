@@ -55,9 +55,7 @@ export function SiteMenu() {
           role="menu"
           className="absolute right-0 z-40 mt-2 min-w-[11rem] overflow-hidden rounded-sm border border-neon-pink/35 bg-void-950/95 shadow-glow-pink backdrop-blur"
         >
-          {site.menu.items.map((item) => {
-            const external = item.href.startsWith("http") || item.href.endsWith(".html");
-            return (
+          {site.menu.items.map((item) => (
               <a
                 key={item.href}
                 role="menuitem"
@@ -70,8 +68,7 @@ export function SiteMenu() {
               >
                 {item.label}
               </a>
-            );
-          })}
+          ))}
         </div>
       ) : null}
     </div>
