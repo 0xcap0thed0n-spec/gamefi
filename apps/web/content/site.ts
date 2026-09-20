@@ -179,7 +179,6 @@ export const site = {
     logo: "/images/logo-transparent.png",
     background: "/images/background-art-v2.jpeg",
     theme: "/audio/ninjatheme3.wav",
-    sfxClick: "/audio/blipSelect.wav",
     neonButton: "/images/neon-button-cyan.png",
     neonPanel: "/images/neon-panel-pink.png",
     neonPanelAlt: "/images/neon-panel-pink-alt.png",
