@@ -243,9 +243,11 @@ export function WhitelistForm() {
           <p className="text-[8px] uppercase tracking-[0.3em] text-neon-cyan">
             {step === "tasks" ? whitelist.eyebrow : whitelist.stepDetailsEyebrow}
           </p>
-          <h2 className="mt-4 text-sm uppercase tracking-wide text-white sm:text-base">
-            {whitelist.title}
-          </h2>
+          {whitelist.title.trim() ? (
+            <h2 className="mt-4 text-sm uppercase tracking-wide text-white sm:text-base">
+              {whitelist.title}
+            </h2>
+          ) : null}
           <p className="mt-3 text-[8px] leading-relaxed text-zinc-400 sm:text-[9px]">
             {whitelist.subtitle}
           </p>
