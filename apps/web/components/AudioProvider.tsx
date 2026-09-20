@@ -147,23 +147,15 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     setMutedState(false);
     void (async () => {
       await ensureCtx();
-      void ensureSfxBuffer();
+      
       await playTheme();
     })();
   }, [ensureCtx, ensureSfxBuffer, playTheme]);
 
-  /** Select / confirm — blipSelect.wav */
-  const playClick = useCallback(() => {
-    void playSfx(0.55);
-  }, [playSfx]);
+  /** UI SFX paused until better clips land */
+  const playClick = useCallback(() => {}, []);
 
-  /** Softer cursor tick — same sample, quieter + throttled */
-  const playHover = useCallback(() => {
-    const now = performance.now();
-    if (now - hoverThrottle.current < 160) return;
-    hoverThrottle.current = now;
-    void playSfx(0.22);
-  }, [playSfx]);
+  const playHover = useCallback(() => {}, []);
 
   useEffect(() => {
     return () => {
