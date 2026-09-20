@@ -19,7 +19,7 @@ export const site = {
 
   hero: {
     badge: "SIGNAL LIVE · WHITELIST OPEN",
-    ctaPrimary: "APPLY",
+    ctaPrimary: "",
     ctaPrimaryHref: "#whitelist",
     ctaSecondary: "Read the Lore",
     ctaSecondaryHref: "#lore",
@@ -157,6 +157,16 @@ export const site = {
       { label: "Lore", href: "#lore" },
     ],
     credit: "Synthwave nights · CRT optional · Art & lore placeholders welcome",
+  },
+
+  menu: {
+    openLabel: "MENU",
+    closeLabel: "CLOSE",
+    items: [
+      { label: "Trait Forge", href: "/tools/trait-forge.html" },
+      { label: "Whitelist", href: "#whitelist" },
+      { label: "Lore", href: "#lore" },
+    ],
   },
 
   audio: {
