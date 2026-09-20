@@ -19,7 +19,7 @@ export const site = {
 
   hero: {
     badge: "SIGNAL LIVE · WHITELIST OPEN",
-    ctaPrimary: "Enter the Frequency",
+    ctaPrimary: "APPLY",
     ctaPrimaryHref: "#whitelist",
     ctaSecondary: "Read the Lore",
     ctaSecondaryHref: "#lore",
@@ -50,7 +50,7 @@ export const site = {
   whitelist: {
     id: "whitelist",
     eyebrow: "ACCESS // WHITELIST",
-    title: "Enter the Frequency",
+    title: "",
     subtitle:
       "Drop your X handle, tell us why Nightfall, then paste your wallet. Applications are reviewed by hand.",
     fields: {
