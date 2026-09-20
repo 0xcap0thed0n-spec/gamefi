@@ -12,8 +12,15 @@ import {
 } from "react";
 import { site } from "@/content/site";
 import { playSound } from "@/lib/sound-engine";
-import { select007Sound } from "@/sounds/select-007";
+import { back001Sound } from "@/sounds/back-001";
+import { back002Sound } from "@/sounds/back-002";
 import { back003Sound } from "@/sounds/back-003";
+
+const UI_SOUNDS = [back001Sound, back002Sound, back003Sound] as const;
+
+function pickUiSound() {
+  return UI_SOUNDS[Math.floor(Math.random() * UI_SOUNDS.length)]!;
+}
 
 type AudioApi = {
   muted: boolean;
@@ -85,22 +92,22 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     void playTheme();
   }, [playTheme]);
 
-  /** Primary UI click — soundcn select-007 */
+  /** UI clicks — random soundcn back-001 / back-002 / back-003 */
   const playClick = useCallback(() => {
-    void playSound(select007Sound.dataUri, { volume: 0.55 });
+    void playSound(pickUiSound().dataUri, { volume: 0.55 });
   }, []);
 
-  /** Soft hover tick — quieter select */
+  /** Soft hover tick — quieter random pick from the same pool */
   const playHover = useCallback(() => {
     const now = performance.now();
     if (now - hoverThrottle.current < 160) return;
     hoverThrottle.current = now;
-    void playSound(select007Sound.dataUri, { volume: 0.22 });
+    void playSound(pickUiSound().dataUri, { volume: 0.22 });
   }, []);
 
-  /** Back / close — soundcn back-003 */
+  /** Back / close — also randomized from the same three */
   const playBack = useCallback(() => {
-    void playSound(back003Sound.dataUri, { volume: 0.5 });
+    void playSound(pickUiSound().dataUri, { volume: 0.5 });
   }, []);
 
   useEffect(() => {
