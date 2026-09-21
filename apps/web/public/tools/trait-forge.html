@@ -170,6 +170,14 @@
     display:flex;justify-content:space-between;gap:4px}
   .tok .tag .cls{color:var(--purple)}
   .tok .gapflag{position:absolute;top:4px;right:4px;width:6px;height:6px;border-radius:50%;background:var(--warn)}
+  .tok .tokSave{position:absolute;top:5px;left:5px;width:26px;height:26px;padding:0;display:grid;place-items:center;
+    border-radius:3px;background:rgba(4,2,10,.86);border:1px solid var(--line-hi);color:var(--cyan);
+    opacity:0;transition:opacity .12s, border-color .12s}
+  .tok .tokSave svg{width:14px;height:14px;display:block}
+  .tok:hover .tokSave, .tok:focus-within .tokSave, .tok .tokSave.busy, .tok .tokSave.done{opacity:1}
+  .tok .tokSave:hover{border-color:var(--cyan);box-shadow:0 0 10px rgba(53,228,245,.3)}
+  .tok .tokSave.done{color:var(--ok);border-color:var(--ok)}
+  @media (hover:none){ .tok .tokSave{opacity:1} }
   .bd-checker{--bd:#0e0a1c;
     background-image:linear-gradient(45deg,#1c1536 25%,transparent 25%),linear-gradient(-45deg,#1c1536 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#1c1536 75%),linear-gradient(-45deg,transparent 75%,#1c1536 75%);
     background-size:12px 12px;background-position:0 0,0 6px,6px -6px,-6px 0}
@@ -182,6 +190,13 @@
     background:rgba(4,2,10,.7); border:1px solid var(--line); border-radius:3px; padding:12px 16px}
   .tree b{color:var(--cyan); font-weight:500}
   .tree i{color:var(--faint); font-style:normal}
+
+  .exportrow{padding-block:12px}
+  .rowlabel{font-family:var(--pix);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);min-width:58px}
+  .scalenote{font-family:var(--mono);font-size:11px;color:var(--dim)}
+  .scalenote.ok{color:var(--ok)} .scalenote.warn{color:var(--warn)}
+  .exportstatus{flex-basis:100%;font-family:var(--mono);font-size:11px;color:var(--dim);min-height:1em}
+  .exportstatus:empty{display:none}
 
   /* ---------- inspector ---------- */
   .insp{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;padding:14px}
@@ -273,6 +288,27 @@
     <button class="primary" id="btnGen">Generate</button>
   </div>
 
+  <div class="bar exportrow" id="exportRow">
+    <span class="rowlabel">Export</span>
+    <span class="ctl"><label for="outSize">Resolution</label>
+      <select id="outSize">
+        <option value="256">256 × 256</option>
+        <option value="512">512 × 512</option>
+        <option value="1024" selected>1024 × 1024</option>
+        <option value="2048">2048 × 2048</option>
+        <option value="4096">4096 × 4096</option>
+        <option value="native">Original size</option>
+        <option value="custom">Custom…</option>
+      </select></span>
+    <span class="ctl" id="customWrap" hidden><label for="customSize">px</label>
+      <input type="number" id="customSize" value="1024" min="16" max="8192" step="1" style="width:78px"></span>
+    <span class="scalenote" id="scaleNote"></span>
+    <span class="spacer"></span>
+    <button class="ghost" id="btnCancelExport" hidden>Cancel</button>
+    <button class="primary" id="btnExportAll" disabled>Export all as .zip</button>
+    <span class="exportstatus" id="exportStatus"></span>
+  </div>
+
   <div class="cols">
     <div>
       <section class="panel">
@@ -341,6 +377,7 @@
           <div>
             <ul class="traits" id="inspTraits"></ul>
             <div class="why" id="inspWhy"></div>
+            <button id="btnSavePng" style="margin-top:12px">Save PNG</button>
           </div>
         </div>
       </section>
@@ -579,6 +616,7 @@ function drawSheet(){
       '  <b>Face Accessory/</b>  Cigarette.png</pre>'+
       '<p style="margin-top:14px">Spaces, capitals, underscores — all fine. <i style="font-style:normal;color:var(--faint)">Bomber Jacket.png</i> and <i style="font-style:normal;color:var(--faint)">bomber_jacket.png</i> both come out as Bomber Jacket.</p></div>';
     $("sheetCount").textContent = "awaiting layers";
+    updateExportBar();
     return;
   }
   if(!lastRun.supply){
@@ -587,6 +625,7 @@ function drawSheet(){
       '<p>Layers are loaded. Enter how many tokens to generate — the full collection size for real coverage and duplicate numbers, '+
       'or a few dozen for a quick look — then hit Generate.</p></div>';
     $("sheetCount").textContent = "0 tokens";
+    updateExportBar();
     return;
   }
   const n = Math.min(parseInt($("previewN").value,10), lastRun.tokens.length);
@@ -611,13 +650,24 @@ function drawSheet(){
     tag.innerHTML = '<span>#'+String(tok.id).padStart(4,"0")+'</span>'+(cfg.gate.on?'<span class="cls">'+tok.cls+'</span>':'');
     cell.appendChild(tag);
     cell.addEventListener("click", () => inspect(tok, cell));
+    const sv = document.createElement("button");
+    sv.type = "button"; sv.className = "tokSave";
+    sv.title = "Save this one as a PNG";
+    sv.setAttribute("aria-label", "Save #" + String(tok.id).padStart(4,"0") + " as PNG");
+    sv.innerHTML = DL_ICON;
+    sv.addEventListener("click", e => { e.stopPropagation(); saveOne(tok, sv) });
+    cell.appendChild(sv);
     frag.appendChild(cell);
   }
   sheet.appendChild(frag);
   $("sheetCount").textContent = n.toLocaleString() + " of " + lastRun.tokens.length.toLocaleString();
+  updateExportBar();
 }
 
+let inspTok = null;
 function inspect(tok, cell){
+  inspTok = tok;
+  updateExportBar();
   document.querySelectorAll(".tok.sel").forEach(e => e.classList.remove("sel"));
   if(cell) cell.classList.add("sel");
   $("inspPanel").hidden = false;
@@ -962,7 +1012,7 @@ async function ingest(input){
 
     if(p.layer){
       byLayer[p.layer] = byLayer[p.layer] || {};
-      byLayer[p.layer][p.trait] = {canvas:c};
+      byLayer[p.layer][p.trait] = {canvas:c, file:d.it.file};
       if(!traits[p.layer].some(t => t[0] === p.trait))
         traits[p.layer].push(p.cls ? [p.trait, 10, p.cls] : [p.trait, 10]);
     }
@@ -999,6 +1049,198 @@ function drawValidation(){
   $("valTable").innerHTML = head + body;
 }
 
+/* ============================ export ============================
+   Renders from the original files at the chosen size. Pixel art is scaled
+   nearest-neighbour so every pixel stays a hard-edged block. */
+const isPixelArt = () => Math.max(CANVAS.w, CANVAS.h) <= 128;
+function outDims(){
+  const v = $("outSize").value;
+  if(v === "native") return {w:CANVAS.w, h:CANVAS.h, f:1};
+  const target = v === "custom" ? Math.max(16, Math.min(8192, parseInt($("customSize").value,10) || 1024)) : parseInt(v,10);
+  const side = Math.max(CANVAS.w, CANVAS.h), f = target / side;
+  return {w:Math.round(CANVAS.w*f), h:Math.round(CANVAS.h*f), f};
+}
+function scaleNote(){
+  const {f, w, h} = outDims(), side = Math.max(CANVAS.w, CANVAS.h);
+  if(f === 1) return {txt:w+"×"+h+" · original size", cls:"ok"};
+  if(!isPixelArt()) return f > 1
+    ? {txt:(f < 10 ? f.toFixed(2) : f.toFixed(1))+"× larger than the source — upscaling adds no detail, so it will look softer", cls:"warn"}
+    : {txt:w+"×"+h+" · scaled down from the source", cls:"ok"};
+  if(Math.abs(f - Math.round(f)) < 1e-9) return {txt:Math.round(f)+"× · every pixel stays a crisp "+Math.round(f)+"×"+Math.round(f)+" block", cls:"ok"};
+  const lo = Math.floor(f)*side, hi = Math.ceil(f)*side;
+  return {txt:f.toFixed(2)+"× · doesn't divide evenly, so some pixels come out a hair wider — "+lo+" or "+hi+" px would be clean", cls:"warn"};
+}
+function updateExportBar(){
+  const hasArt = artLoaded(), hasRun = !!(lastRun && lastRun.supply > 0);
+  const ready = hasArt && hasRun;
+  $("customWrap").hidden = $("outSize").value !== "custom";
+  const {w, h} = outDims();
+  const sizeLabel = $("outSize").value === "native" ? "original size" : w + " px";
+  $("btnSavePng").textContent = "Save PNG · " + sizeLabel;
+  if(!exporting) $("btnExportAll").disabled = !ready;
+  $("btnExportAll").textContent = ready
+    ? "Export all " + lastRun.tokens.length.toLocaleString() + " as .zip"
+    : "Export all as .zip";
+  const el = $("scaleNote");
+  if(hasArt){ const n = scaleNote(); el.textContent = n.txt; el.className = "scalenote " + n.cls }
+  else { el.textContent = ""; el.className = "scalenote" }
+  // show a hint while there's nothing to export; never wipe a result message once there is
+  const HINTS = ["Load your layers and generate a supply — then every generated image can be exported here in one zip.",
+                 "Enter a supply and hit Generate — then all of them can be exported here in one zip."];
+  const st = $("exportStatus");
+  if(!exporting && !confirmAll){
+    if(!ready) st.textContent = hasArt ? HINTS[1] : HINTS[0];
+    else if(HINTS.includes(st.textContent)) st.textContent = "";
+  }
+}
+
+async function sourceFor(layerId, trait, cache){
+  const e = realArt && realArt[layerId] && realArt[layerId][trait];
+  if(!e) return null;
+  const k = layerId + "|" + trait;
+  if(!cache.has(k)) cache.set(k, e.file ? await createImageBitmap(e.file) : e.canvas);
+  return cache.get(k);
+}
+async function renderFull(tok, cache){
+  const {w, h} = outDims();
+  const c = document.createElement("canvas"); c.width = w; c.height = h;
+  const ctx = c.getContext("2d");
+  ctx.imageSmoothingEnabled = !isPixelArt();
+  ctx.imageSmoothingQuality = "high";
+  for(const l of LAYERS){
+    const t = tok.chosen[l.id];
+    if(!t || tok.suppressed.includes(l.id)) continue;
+    const src = await sourceFor(l.id, t, cache);
+    if(src) ctx.drawImage(src, 0, 0, w, h);
+  }
+  return new Promise(res => c.toBlob(res, "image/png"));
+}
+const closeAll = cache => cache.forEach(b => { if(b && b.close) b.close() });
+
+let dl = null;   // the viewer's downloads capability, when this page runs inside Claude
+if(window.claude && typeof window.claude.use === "function"){
+  window.claude.use("downloads").then(ns => { dl = ns }).catch(() => {});
+}
+async function saveBlob(blob, name){
+  if(dl){
+    try{ await dl.save({filename:name, data:blob}); return "saved" }
+    catch(err){
+      const code = err && err.code;
+      if(code === "declined") return "declined";
+      if(code === "rate_limited") return "busy";
+      if(code === "too_large") return "too_large";
+      // unavailable / not granted: fall through to a normal browser download
+    }
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+  return "saved";
+}
+const SAVE_MSG = {
+  declined:"Save cancelled.",
+  busy:"A save prompt is already open — finish that one first.",
+  too_large:"That zip is too big to save from here. Try a smaller resolution."
+};
+
+const DL_ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square" aria-hidden="true"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M2.5 13.5h11"/></svg>';
+const CHECK_ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5"/></svg>';
+
+/* Save a single token at the resolution chosen in the Export row. */
+async function saveOne(tok, btn){
+  if(!tok || (btn && btn.classList.contains("busy"))) return;
+  const cache = new Map();
+  const pad = Math.max(4, String(lastRun ? lastRun.supply : 0).length);
+  const id = String(tok.id).padStart(pad, "0");
+  const {w} = outDims();
+  const size = $("outSize").value === "native" ? "original" : w + "px";
+  if(btn) btn.classList.add("busy");
+  try{
+    const blob = await renderFull(tok, cache);
+    const res = await saveBlob(blob, "nightfall-" + id + "-" + size + ".png");
+    $("exportStatus").textContent = res === "saved" ? "Saved #" + id + " as a " + (size === "original" ? "original-size" : w + " × " + w) + " PNG." : SAVE_MSG[res];
+    if(res === "saved" && btn && btn.classList.contains("tokSave")){
+      btn.classList.add("done"); btn.innerHTML = CHECK_ICON;
+      setTimeout(() => { btn.classList.remove("done"); btn.innerHTML = DL_ICON }, 1400);
+    }
+  }catch(err){
+    $("exportStatus").textContent = "Couldn't save #" + id + ": " + ((err && err.message) || err);
+  }finally{
+    closeAll(cache);
+    if(btn) btn.classList.remove("busy");
+  }
+}
+
+/* Minimal zip writer (stored, no compression — PNGs are already compressed). No library needed. */
+const CRC_TABLE = (() => { const t = new Uint32Array(256); for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0 } return t })();
+function crc32(b){ let c = 0xFFFFFFFF; for(let i=0;i<b.length;i++) c = CRC_TABLE[(c ^ b[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0 }
+function makeZip(files){
+  const enc = new TextEncoder(), parts = [], central = [];
+  const d = new Date(), dosTime = (d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1),
+        dosDate = ((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate();
+  let offset = 0;
+  for(const f of files){
+    const name = enc.encode(f.name), crc = crc32(f.data), size = f.data.length;
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0,0x04034b50,true); lh.setUint16(4,20,true); lh.setUint16(6,0x0800,true); lh.setUint16(8,0,true);
+    lh.setUint16(10,dosTime,true); lh.setUint16(12,dosDate,true);
+    lh.setUint32(14,crc,true); lh.setUint32(18,size,true); lh.setUint32(22,size,true);
+    lh.setUint16(26,name.length,true); lh.setUint16(28,0,true);
+    parts.push(new Uint8Array(lh.buffer), name, f.data);
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0,0x02014b50,true); ch.setUint16(4,20,true); ch.setUint16(6,20,true); ch.setUint16(8,0x0800,true); ch.setUint16(10,0,true);
+    ch.setUint16(12,dosTime,true); ch.setUint16(14,dosDate,true);
+    ch.setUint32(16,crc,true); ch.setUint32(20,size,true); ch.setUint32(24,size,true);
+    ch.setUint16(28,name.length,true);
+    ch.setUint32(42,offset,true);
+    central.push(new Uint8Array(ch.buffer), name);
+    offset += 30 + name.length + size;
+  }
+  const cd = central.reduce((a,b) => a + b.length, 0);
+  const end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0,0x06054b50,true);
+  end.setUint16(8,files.length,true); end.setUint16(10,files.length,true);
+  end.setUint32(12,cd,true); end.setUint32(16,offset,true);
+  return new Blob([...parts, ...central, new Uint8Array(end.buffer)], {type:"application/zip"});
+}
+
+let exporting = null, confirmAll = false;
+async function exportTokens(list, label){
+  if(exporting || !list.length) return;
+  const job = exporting = {cancel:false};
+  const status = $("exportStatus"), cache = new Map(), files = [];
+  const pad = Math.max(4, String(lastRun.supply).length);
+  const {w} = outDims();
+  $("btnCancelExport").hidden = false;
+  $("btnExportAll").disabled = $("btnSavePng").disabled = true;
+  try{
+    for(let i=0; i<list.length; i++){
+      if(job.cancel){ status.textContent = "Export cancelled."; return }
+      const tok = list[i];
+      const blob = await renderFull(tok, cache);
+      files.push({name:"nightfall-" + String(tok.id).padStart(pad,"0") + ".png", data:new Uint8Array(await blob.arrayBuffer())});
+      if(i % 8 === 0 || i === list.length-1)
+        status.textContent = "Rendering " + (i+1).toLocaleString() + " of " + list.length.toLocaleString() + " at " + w + " px…";
+    }
+    status.textContent = "Packing the zip…";
+    await new Promise(r => setTimeout(r, 30));
+    const zip = makeZip(files);
+    const res = await saveBlob(zip, "nightfall-" + label + "-" + ($("outSize").value === "native" ? "original" : w + "px") + ".zip");
+    status.textContent = res === "saved"
+      ? files.length.toLocaleString() + " images · " + (zip.size/1048576).toFixed(1) + " MB · zip saved."
+      : SAVE_MSG[res];
+  }catch(err){
+    status.textContent = "Export stopped: " + ((err && err.message) || err) + ". Try a smaller output size or export fewer tokens.";
+  }finally{
+    closeAll(cache);
+    exporting = null;
+    $("btnCancelExport").hidden = true;
+    $("btnSavePng").disabled = false;
+    updateExportBar();
+  }
+}
+
 /* ============================ config io ============================ */
 const snapshot = () => ({none:cfg.none, gate:cfg.gate, rules:cfg.rules, weights:
   Object.fromEntries(LAYERS.map(l => [l.id, Object.fromEntries((cfg.traits[l.id]||[]).map(t => [t[0], t[1]]))]))});
@@ -1020,6 +1262,21 @@ $("btnGen").addEventListener("click", generate);
 $("supply").addEventListener("change", generate);
 $("seed").addEventListener("change", generate);
 $("previewN").addEventListener("change", () => { if(lastRun) drawSheet() });
+$("outSize").addEventListener("change", () => { confirmAll = false; $("exportStatus").textContent = ""; updateExportBar() });
+$("customSize").addEventListener("input", () => { confirmAll = false; updateExportBar() });
+$("btnExportAll").addEventListener("click", () => {
+  const n = lastRun.tokens.length, {w, h} = outDims();
+  const heavy = !isPixelArt() && n * w * h > 1.5e9;
+  if(heavy && !confirmAll){
+    confirmAll = true;
+    $("exportStatus").textContent = "That's " + n.toLocaleString() + " full-colour images at " + w + " px — it can run to several GB and take a while. Click again to go ahead, or pick a smaller output first.";
+    return;
+  }
+  confirmAll = false;
+  exportTokens(lastRun.tokens, "all");
+});
+$("btnCancelExport").addEventListener("click", () => { if(exporting) exporting.cancel = true });
+$("btnSavePng").addEventListener("click", () => { if(inspTok) saveOne(inspTok, $("btnSavePng")) });
 $("zoom").addEventListener("input", () => { if(lastRun) drawSheet() });
 $("bdrop").addEventListener("change", () => { if(lastRun) drawSheet() });
 $("rarityLayer").addEventListener("change", drawRarity);
@@ -1059,6 +1316,7 @@ $("btnReset").addEventListener("click", () => {
 load();
 drawStack(); drawRarity(); drawGate(); drawRules(); refreshBuilder(); syncCfgBox();
 generate();
+updateExportBar();
 </script>
 
 </body>
