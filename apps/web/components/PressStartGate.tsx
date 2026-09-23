@@ -28,15 +28,18 @@ export function PressStartGate() {
   const [percent, setPercent] = useState(0);
 
   useEffect(() => {
-    // OAuth callback is a full navigation — don't force Press Start again.
+    // Skip Press Start for this tab once they've already entered
+    // (logo / MENU / Trait Forge hops), or on OAuth return.
     try {
       const q = new URLSearchParams(window.location.search);
-      const skip =
+      const alreadyIn =
+        sessionStorage.getItem("nf_press_start_done") === "1";
+      const oauth =
         q.has("twitter_error") ||
         q.has("twitter") ||
         sessionStorage.getItem("nf_oauth_return") === "1";
-      if (skip) {
-        sessionStorage.removeItem("nf_oauth_return");
+      if (oauth) sessionStorage.removeItem("nf_oauth_return");
+      if (alreadyIn || oauth) {
         document.documentElement.classList.add("nf-booted");
         setOpen(false);
       }
@@ -77,6 +80,11 @@ export function PressStartGate() {
   useEffect(() => {
     if (phase !== "out") return;
     const done = window.setTimeout(() => {
+      try {
+        sessionStorage.setItem("nf_press_start_done", "1");
+      } catch {
+        /* ignore */
+      }
       setOpen(false);
       setPhase("idle");
       setPercent(0);
