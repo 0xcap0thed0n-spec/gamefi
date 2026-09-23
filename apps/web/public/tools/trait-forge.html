@@ -171,17 +171,38 @@
   .onesrow .zidx{color:var(--gold)}
 
   /* rarity rows */
-  .rrow{display:grid;grid-template-columns:minmax(0,1fr) auto 78px;gap:10px;align-items:center;padding:7px 14px;border-bottom:1px solid var(--line)}
+  .rrow{display:grid;grid-template-columns:minmax(0,1fr) auto 86px 24px;gap:10px;align-items:center;padding:7px 14px;border-bottom:1px solid var(--line)}
   .rrow .pinb{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;padding:3px 8px;border-radius:5px;border:1px solid var(--line);background:transparent;color:var(--faint);cursor:pointer;white-space:nowrap}
   .rrow .pinb:hover{border-color:var(--line-hi);color:var(--dim)}
   .rrow .pinb.on{border-color:rgba(53,228,245,.45);color:var(--cyan);background:rgba(53,228,245,.07)}
   .rrow.auto input{color:var(--dim);border-style:dashed}
+  .rrow .tiersel{font-size:11px;padding:4px 6px;min-width:104px;cursor:pointer}
+  .tiersel.t-exact{color:var(--cyan);border-color:rgba(53,228,245,.45)}
+  .tiersel.t-common{color:#c9c3e0}
+  .tiersel.t-uncommon{color:var(--ok);border-color:rgba(61,220,151,.4)}
+  .tiersel.t-rare{color:#4aa8ff;border-color:rgba(74,168,255,.45)}
+  .tiersel.t-epic{color:var(--purple);border-color:rgba(154,107,255,.5)}
+  .tiersel.t-legendary{color:var(--warn);border-color:rgba(255,179,71,.5)}
+  .tiersel.t-mythic{color:var(--pink);border-color:rgba(255,45,149,.55);box-shadow:0 0 10px rgba(255,45,149,.2)}
+  .tiersel option{color:var(--txt);background:var(--ink-1)}
+  .rrow .rdel{background:transparent;border:1px solid transparent;color:var(--faint);padding:2px 5px;font-size:13px;line-height:1;border-radius:2px;cursor:pointer}
+  .rrow .rdel:hover{color:var(--bad);border-color:rgba(255,59,107,.45);box-shadow:none}
+  .removedrow{padding:10px 14px;border-top:1px dashed var(--line-hi);display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .removedrow .lab{font-family:var(--pix);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-right:4px}
+  .removedrow button{font-family:var(--mono);font-size:11px;padding:3px 8px;border:1px dashed var(--line-hi);background:transparent;
+    color:var(--dim);border-radius:2px;cursor:pointer;text-decoration:line-through;text-decoration-color:rgba(255,59,107,.6)}
+  .removedrow button:hover{color:var(--ok);border-color:rgba(61,220,151,.5);text-decoration:none}
+  .removedrow button:hover::before{content:"↺ "}
+  .tierodds{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:10px;align-items:center}
+  .tierodds label{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10.5px;color:var(--dim)}
+  .tierodds input{width:52px;padding:3px 5px;font-size:11px;text-align:right}
+  .tierodds .tn{font-weight:600}
   .rrow:last-child{border-bottom:0}
   .rrow .nm{min-width:0;font-size:12.5px}
   .rrow .nm b{font-weight:400;font-family:var(--mono);font-size:10px;color:var(--purple);margin-left:5px}
   .rrow .nm em{font-style:normal;color:var(--faint)}
   .rrow .pctwrap{display:flex;align-items:center;gap:4px}
-  .rrow input{width:56px;text-align:right}
+  .rrow input{width:64px;text-align:right}
   .rrow .pcts{font-family:var(--mono);font-size:11px;color:var(--faint)}
   .rbar{grid-column:1/-1;height:3px;border-radius:2px;background:rgba(255,255,255,.06);overflow:hidden;margin-top:-3px}
   .rbar span{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--purple))}
@@ -392,13 +413,18 @@
           <div class="rlist" id="rarityList"></div>
           <div class="rtot"><span>Total</span><span id="rarityTotal">—</span></div>
           <div class="pad" style="border-top:1px solid var(--line)">
-            <p class="note">Type the share you want a trait to have and it becomes <b>SET</b>: that number stays put no matter what you change next. Every <b>AUTO</b> row splits whatever is left over, so the column totals 100%. Click SET/AUTO on a row to switch it back. <b>None</b> is how often the category comes back empty.</p>
+            <p class="note">Two ways to set rarity, mixed freely. <b>Pick a tier</b> (Common to Mythic) for quick setup: tier rows share the category by their odds below. <b>Type a %</b> for exact control: that row switches to Exact and stays put no matter what you change next. The column always totals 100%. <b>None</b> is how often the category comes back empty.</p>
             <p class="note" id="rarityNote" hidden style="color:var(--warn);margin-top:8px"></p>
             <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-              <button class="small" id="btnEven">Even shares</button>
+              <button class="small" id="btnEven" title="Every trait back to Common, None back to 0%">All Common</button>
               <button class="small ghost" id="btnClearNone">None = 0%</button>
               <button class="small ghost" id="btnBalance" hidden>Scale to 100%</button>
             </div>
+            <details style="margin-top:12px">
+              <summary class="note" style="cursor:pointer">Tier odds <span style="color:var(--faint)">· how often each tier turns up next to a Common, for every category</span></summary>
+              <div class="tierodds" id="tierOdds"></div>
+              <div style="display:flex;gap:8px;margin-top:8px"><button class="small ghost" id="btnTierReset">Default odds</button></div>
+            </details>
           </div>
         </section>
 
@@ -564,6 +590,55 @@ let cats = [];              // [{id, name}] bottom-to-top
 let traits = {};            // catId -> [{name, w, cls}]
 let noneW = {};             // catId -> weight of "None"
 let nonePin = {};           // catId -> is the "None" share set by hand (default: yes, at 0%)
+let noneTier = {};          // catId -> rarity tier the "None" row uses when it is not an exact %
+/* traits taken out of the collection. The names are part of the ruleset, so
+   loading the artist's full folder again does not bring them back; the trait
+   itself waits on the shelf (art included) so it can be restored in one click. */
+let removed = {};           // catId -> [trait names]
+let shelf = {};             // catId -> {traitName: trait object}
+const isRemoved = (cid, name) => (removed[cid] || []).indexOf(name) >= 0;
+function removeTrait(cid, name){
+  const list = traits[cid] || [];
+  const i = list.findIndex(t => t.name === name);
+  if(i >= 0){ const [t] = list.splice(i, 1); (shelf[cid] = shelf[cid] || {})[name] = t }
+  removed[cid] = removed[cid] || [];
+  if(removed[cid].indexOf(name) < 0) removed[cid].push(name);
+  spread(cid);
+}
+function restoreTrait(cid, name){
+  removed[cid] = (removed[cid] || []).filter(n => n !== name);
+  if(!removed[cid].length) delete removed[cid];
+  const t = shelf[cid] && shelf[cid][name];
+  if(t){
+    delete shelf[cid][name];
+    t.pin = false;                                   // comes back on its tier, sharing what is left
+    (traits[cid] = traits[cid] || []).push(t);
+    spread(cid);
+    return true;
+  }
+  return false;                                      // never loaded here: it returns with the next folder load
+}
+/* make the removed list match a ruleset exactly */
+function applyRemoved(next){
+  const want = {};
+  for(const cid in (next || {})) if(Array.isArray(next[cid]) && next[cid].length) want[cid] = [...new Set(next[cid])];
+  for(const cid in removed) (removed[cid] || []).slice().forEach(n => { if(!(want[cid] || []).includes(n)) restoreTrait(cid, n) });
+  for(const cid in want) want[cid].forEach(n => removeTrait(cid, n));
+}
+/* rarity tiers: relative odds inside one category. A Mythic trait turns up
+   a hundredth as often as a Common one sitting next to it. */
+const TIERS = [
+  {id:"common",    name:"Common"},
+  {id:"uncommon",  name:"Uncommon"},
+  {id:"rare",      name:"Rare"},
+  {id:"epic",      name:"Epic"},
+  {id:"legendary", name:"Legendary"},
+  {id:"mythic",    name:"Mythic"}
+];
+const TIER_DEFAULT = {common:100, uncommon:50, rare:25, epic:10, legendary:4, mythic:1};
+let tierW = Object.assign({}, TIER_DEFAULT);
+const tierOf = id => TIERS.find(t => t.id === id) ? id : "common";
+const tierWeight = id => { const w = +tierW[tierOf(id)]; return isFinite(w) && w > 0 ? w : 0 };
 let art = {};               // catId -> {traitName: {canvas, file}}
 let ones = [];              // [{name, canvas, file}]
 let rules = [];
@@ -590,40 +665,45 @@ function newCatId(name){
 function addCat(name, atEnd){
   const c = {id:newCatId(name), name:name};
   if(atEnd === false) cats.unshift(c); else cats.push(c);
-  traits[c.id] = []; noneW[c.id] = 0; nonePin[c.id] = true;
+  traits[c.id] = []; noneW[c.id] = 0; nonePin[c.id] = true; noneTier[c.id] = "common";
   return c;
 }
 function resetCats(){
-  cats = []; traits = {}; noneW = {}; nonePin = {};
+  cats = []; traits = {}; noneW = {}; nonePin = {}; noneTier = {};
   DEFAULT_CATS.forEach(n => addCat(n));
   selCat = cats[0].id;
   examplesUntouched = true;
 }
 
-/* ========================= rarity as percentages =========================
-   Every row is either SET (you typed it, and nothing else moves it) or AUTO
-   (it takes an even cut of whatever the SET rows leave over). Typing a number
-   sets that row, so a share you dialled in earlier stays exactly where you
-   put it no matter what you change afterwards. */
+/* ========================= rarity: exact % or a tier =========================
+   Every row is either an EXACT % (you typed it, and nothing else moves it) or
+   a TIER (Common through Mythic). Tier rows split whatever the exact rows leave
+   over, in proportion to their tier's odds, so the column still totals 100.
+   Typing a number makes a row exact; picking a tier hands it back to the split. */
 let pctNote = "";
 function rowsOf(catId){
   const list = traits[catId] || [];
   const rows = list.map((t,i) => ({label:t.name, cls:t.cls, get:() => t.w, set:v => t.w = v,
-                                   pinned:() => !!t.pin, pin:v => t.pin = !!v, index:i}));
+                                   pinned:() => !!t.pin, pin:v => t.pin = !!v,
+                                   tier:() => tierOf(t.tier), setTier:v => t.tier = tierOf(v), index:i}));
   rows.push({label:"None", none:true, get:() => noneW[catId] || 0, set:v => noneW[catId] = v,
-             pinned:() => nonePin[catId] !== false, pin:v => nonePin[catId] = !!v, index:-1});
+             pinned:() => nonePin[catId] !== false, pin:v => nonePin[catId] = !!v,
+             tier:() => tierOf(noneTier[catId]), setTier:v => noneTier[catId] = tierOf(v), index:-1});
   return rows;
 }
 const sumOf = catId => rowsOf(catId).reduce((a,r) => a + r.get(), 0);
 const setSum = rows => rows.filter(r => r.pinned()).reduce((a,r) => a + r.get(), 0);
-/* hand the AUTO rows an even cut of what is left */
+/* hand the tier rows their weighted cut of what is left */
 function spread(catId){
   const rows = rowsOf(catId); if(!rows.length) return;
   const auto = rows.filter(r => !r.pinned());
   const left = Math.max(0, 100 - setSum(rows));
-  if(auto.length){ const each = left / auto.length; auto.forEach(r => r.set(each)) }
+  if(!auto.length) return;
+  const wsum = auto.reduce((a,r) => a + tierWeight(r.tier()), 0);
+  if(wsum > 0) auto.forEach(r => r.set(left * tierWeight(r.tier()) / wsum));
+  else { const each = left / auto.length; auto.forEach(r => r.set(each)) }
 }
-/* scale a category back to 100 (only needed when every row is SET and they do not add up) */
+/* scale a category back to 100 (only needed when every row is exact and they do not add up) */
 function renormalize(catId){
   const rows = rowsOf(catId); if(!rows.length) return;
   const total = rows.reduce((a,r) => a + r.get(), 0);
@@ -645,11 +725,18 @@ function setPct(catId, index, pct){
   pctNote = "";
   if(pct > room + 0.001){
     pctNote = (me.none ? "None" : me.label) + " was capped at " + (Math.round(room*10)/10) +
-              "%. The shares you already set use " + (Math.round(otherSet*10)/10) +
-              "% of the category. Switch one of them back to AUTO to free up room.";
+              "%. The exact shares you already typed use " + (Math.round(otherSet*10)/10) +
+              "% of the category. Give one of them a tier instead to free up room.";
     pct = room;
   }
   me.pin(true); me.set(pct);
+  spread(catId);
+}
+function setTier(catId, index, tier){
+  const rows = rowsOf(catId);
+  const me = rows.find(r => r.index === index); if(!me) return;
+  pctNote = "";
+  me.setTier(tier); me.pin(false);
   spread(catId);
 }
 function togglePin(catId, index){
@@ -659,10 +746,25 @@ function togglePin(catId, index){
   me.pin(!me.pinned());
   spread(catId);
 }
+/* everything back to Common, None back to an exact 0% */
 function evenShares(catId){
   pctNote = "";
-  rowsOf(catId).forEach(r => { r.pin(!!r.none); if(r.none) r.set(0) });
+  rowsOf(catId).forEach(r => { r.setTier("common"); r.pin(!!r.none); if(r.none) r.set(0) });
   spread(catId);
+}
+/* one category's saved rarity (from a ruleset, project or session) onto its loaded traits */
+function applyRarityRecord(cid, r){
+  if(!r) return;
+  const hasPins = Array.isArray(r.__pins);
+  const tiers = r.__tiers || {};
+  (traits[cid] || []).forEach(t => {
+    if(r[t.name] != null) t.w = r[t.name];
+    t.pin = hasPins ? r.__pins.indexOf(t.name) >= 0 : (r[t.name] != null);
+    t.tier = tierOf(tiers[t.name]);
+  });
+  if(r.__none != null) noneW[cid] = r.__none;
+  nonePin[cid] = hasPins ? r.__nonePin !== false : true;
+  noneTier[cid] = tierOf(r.__noneTier);
 }
 /* display percentages, rounded to 1dp; nudged to total exactly 100 only when they already do */
 function displayPcts(catId){
@@ -671,7 +773,10 @@ function displayPcts(catId){
   const vals = rows.map(r => Math.round(r.get() * 10) / 10);
   const sum = vals.reduce((a,b) => a + b, 0);
   if(vals.length && Math.abs(real - 100) < 0.05 && Math.abs(sum - 100) >= 0.05){
-    let bi = 0; vals.forEach((v,i) => { if(v > vals[bi]) bi = i });
+    /* absorb the rounding in the biggest tier row, never in a % someone typed */
+    let bi = -1;
+    vals.forEach((v,i) => { if(!rows[i].pinned() && (bi < 0 || v > vals[bi])) bi = i });
+    if(bi < 0) vals.forEach((v,i) => { if(bi < 0 || v > vals[bi]) bi = i });
     vals[bi] = Math.round((vals[bi] + (100 - sum)) * 10) / 10;
   }
   return vals;
@@ -1007,12 +1112,16 @@ function drawCats(){
     const li = document.createElement("li");
     li.className = (c.id === selCat ? "on " : "") + (c.id === gatedCat() ? "gated" : "");
     const n = (traits[c.id]||[]).length;
-    const loaded = art[c.id] ? Object.keys(art[c.id]).length : 0;
+    const loaded = (traits[c.id] || []).filter(t => art[c.id] && art[c.id][t.name]).length;
+    const nRemoved = (removed[c.id] || []).length;
     const z = document.createElement("span"); z.className = "zidx"; z.textContent = String(i+1);
     const nm = document.createElement("span"); nm.className = "cname";
     nm.textContent = c.name;
     const sm = document.createElement("small");
-    sm.innerHTML = n + " traits" + (loaded ? ' · <span class="hasart">' + loaded + " loaded</span>" : "") +
+    /* all art in: the count itself goes green; partly loaded: say how many */
+    sm.innerHTML = (n && loaded === n ? '<span class="hasart">' + n + " traits</span>"
+                                      : n + " traits" + (loaded ? ' · <span class="hasart">' + loaded + " loaded</span>" : "")) +
+      (nRemoved ? ' · <span style="color:var(--faint)">' + nRemoved + " removed</span>" : "") +
       (c.id === gatedCat() ? ' · <span class="gate">class-gated</span>' : "");
     nm.appendChild(sm);
     if(examplesUntouched){
@@ -1020,7 +1129,7 @@ function drawCats(){
       const ex = document.createElement("span"); ex.className = "extag"; ex.textContent = "example";
       sm.appendChild(ex);
     }
-    nm.title = c.name + " · " + n + " traits" + (loaded ? ", " + loaded + " with art" : "");
+    nm.title = c.name + " · " + n + " traits" + (loaded ? ", " + loaded + " with art" : "") + (nRemoved ? ", " + nRemoved + " removed" : "");
     const nb = document.createElement("span");
     nb.className = "nonebox" + ((noneW[c.id] || 0) > 0 ? " set" : "");
     const ni = document.createElement("input");
@@ -1084,7 +1193,8 @@ function removeCat(c){
   if(!confirm('Remove the "' + c.name + '" category? Its traits and any rules about it go too.')) return;
   cats = cats.filter(x => x.id !== c.id);
   examplesUntouched = false;
-  delete traits[c.id]; delete noneW[c.id]; delete nonePin[c.id]; delete art[c.id];
+  delete traits[c.id]; delete noneW[c.id]; delete nonePin[c.id]; delete noneTier[c.id]; delete art[c.id];
+  delete removed[c.id]; delete shelf[c.id];
   rules = rules.filter(r => r.when.layer !== c.id && r.then.layer !== c.id);
   if(gate.cat === c.id) gate.cat = cats.length ? cats[0].id : null;
   if(selCat === c.id) selCat = cats.length ? cats[0].id : null;
@@ -1107,13 +1217,18 @@ function drawRarity(){
     nm.textContent = r.none ? "None" : r.label;
     if(r.none){ const em = document.createElement("em"); em.textContent = "  (category left empty)"; nm.appendChild(em) }
     if(r.cls){ const b = document.createElement("b"); b.textContent = r.cls; nm.appendChild(b) }
-    const pin = document.createElement("button");
-    pin.className = "pinb" + (r.pinned() ? " on" : "");
-    pin.type = "button";
-    pin.textContent = r.pinned() ? "SET" : "AUTO";
-    pin.title = r.pinned() ? "This share is fixed. Click to let it share what is left over." : "This share splits whatever the set rows leave over. Click to fix it.";
-    pin.addEventListener("click", () => {
-      togglePin(c.id, r.index);
+    const pin = document.createElement("select");
+    const mode = r.pinned() ? "exact" : r.tier();
+    pin.className = "tiersel t-" + mode;
+    pin.setAttribute("aria-label", "Rarity for " + (r.none ? "None" : r.label));
+    TIERS.forEach(t => { const o = document.createElement("option"); o.value = t.id; o.textContent = t.name; pin.appendChild(o) });
+    const ox = document.createElement("option"); ox.value = "exact"; ox.textContent = "Exact %"; pin.appendChild(ox);
+    pin.value = mode;
+    pin.title = r.pinned() ? "Exact: this % stays put. Pick a tier to hand it back to the split."
+                           : TIERS.find(t => t.id === r.tier()).name + ": shares what the exact rows leave over, weighted by tier odds.";
+    pin.addEventListener("change", () => {
+      if(pin.value === "exact") setPct(c.id, r.index, r.get());
+      else setTier(c.id, r.index, pin.value);
       persist(); drawCats(); drawRarity(); syncCfgBox(); generate();
     });
     const wrap = document.createElement("span"); wrap.className = "pctwrap";
@@ -1129,9 +1244,36 @@ function drawRarity(){
     const bar = document.createElement("div"); bar.className = "rbar";
     const fill = document.createElement("span"); fill.style.width = Math.min(100, pcts[i]) + "%";
     bar.appendChild(fill);
-    row.append(nm, pin, wrap, bar);
+    const del = document.createElement(r.none ? "span" : "button");
+    if(!r.none){
+      del.className = "rdel"; del.type = "button"; del.textContent = "×";
+      del.title = "Remove " + r.label + " from the collection. It stays listed below so you can bring it back.";
+      del.setAttribute("aria-label", "Remove " + r.label);
+      del.addEventListener("click", () => {
+        removeTrait(c.id, r.label);
+        persist(); drawCats(); drawRarity(); drawRules(); drawValidation(); refreshBuilder(); syncCfgBox(); generate();
+      });
+    }
+    row.append(nm, pin, wrap, del, bar);
     box.appendChild(row);
   });
+  const gone = removed[c.id] || [];
+  if(gone.length){
+    const rr = document.createElement("div"); rr.className = "removedrow";
+    const lab = document.createElement("span"); lab.className = "lab"; lab.textContent = "Removed · " + gone.length;
+    rr.appendChild(lab);
+    gone.forEach(n => {
+      const b = document.createElement("button"); b.type = "button"; b.textContent = n;
+      b.title = "Click to put " + n + " back in the collection";
+      b.addEventListener("click", () => {
+        const back = restoreTrait(c.id, n);
+        pctNote = back ? "" : n + " will come back the next time you load the folder it is in.";
+        persist(); drawCats(); drawRarity(); drawRules(); drawValidation(); refreshBuilder(); syncCfgBox(); generate();
+      });
+      rr.appendChild(b);
+    });
+    box.appendChild(rr);
+  }
   if(!list.length){
     const d = document.createElement("div"); d.className = "pad";
     d.innerHTML = '<p class="note">No traits in this category yet — load a folder with its name.</p>';
@@ -1153,9 +1295,31 @@ function drawRarity(){
   }
   $("btnBalance").hidden = !off;
   const note = $("rarityNote");
-  const msg = pctNote || (off ? "Every row is set by hand and they total " + tot.toFixed(1) +
-    "%. Generation treats them as relative shares. Switch a row to AUTO, or scale them to 100%." : "");
+  const msg = pctNote || (off ? "Every row has an exact % and they total " + tot.toFixed(1) +
+    "%. Generation treats them as relative shares. Give a row a tier, or scale them to 100%." : "");
   note.textContent = msg; note.hidden = !msg;
+}
+
+function drawTierOdds(){
+  const box = $("tierOdds"); if(!box) return;
+  box.textContent = "";
+  TIERS.forEach(t => {
+    const lab = document.createElement("label");
+    const n = document.createElement("span"); n.className = "tn tiersel t-" + t.id;
+    n.style.border = "0"; n.style.padding = "0"; n.style.background = "none"; n.style.boxShadow = "none";
+    n.textContent = t.name;
+    const i = document.createElement("input");
+    i.type = "number"; i.min = 0; i.step = 1; i.value = tierW[t.id];
+    i.setAttribute("aria-label", t.name + " odds");
+    i.addEventListener("change", () => {
+      const v = parseFloat(i.value);
+      tierW[t.id] = isFinite(v) && v >= 0 ? v : TIER_DEFAULT[t.id];
+      cats.forEach(c => { if((traits[c.id]||[]).length) spread(c.id) });
+      persist(); drawCats(); drawRarity(); drawTierOdds(); syncCfgBox(); generate();
+    });
+    lab.append(n, i);
+    box.appendChild(lab);
+  });
 }
 
 /* ========================= rules UI ========================= */
@@ -1174,7 +1338,7 @@ function ruleSentence(r, plain){
 const RTYPE_LABEL = {exclude:["block","Block"],excludeCategory:["cat","Category"],only:["only","Only"],require:["req","Require"],suppress:["sup","Hide"]};
 function drawRules(){
   const box = $("ruleList"); box.textContent = "";
-  const broken = rules.filter(r => r.dead || ruleTraitGaps(r).length).length;
+  const broken = rules.filter(ruleBroken).length;
   $("ruleCount").textContent = rules.length + " active" + (broken ? " · " + broken + " not matching" : "");
   $("ruleCount").style.color = broken ? "var(--bad)" : "";
   if(!rules.length){
@@ -1203,8 +1367,12 @@ function drawRules(){
     const lab = RTYPE_LABEL[r.type] || ["", r.type];
     const hits = lastRun ? (lastRun.hits.rules[ruleKey(r)] || 0) : null;
     const gaps = r.dead ? [] : ruleTraitGaps(r);
+    const cidsOf = [r.when && r.when.layer, r.then && r.then.layer].filter(Boolean);
+    const wasRemoved = n => cidsOf.some(cid => isRemoved(cid, n));
+    const gone = gaps.filter(wasRemoved), missing = gaps.filter(n => !wasRemoved(n));
     const flag = r.dead ? '<span class="rflag bad">no category "' + r.dead.join('", "') + '"</span>'
-               : gaps.length ? '<span class="rflag">no trait "' + gaps.join('", "') + '"</span>' : "";
+               : (missing.length ? '<span class="rflag">no trait "' + missing.join('", "') + '"</span>' : "") +
+                 (gone.length ? '<span class="rflag" style="color:var(--dim);border-color:var(--line-hi)">"' + gone.join('", "') + '" removed</span>' : "");
     if(r.dead || gaps.length) row.classList.add("broken");
     row.innerHTML = '<span class="rtype '+lab[0]+'">'+lab[1]+'</span><span class="txt">'+ruleSentence(r,false)+flag+'</span>' +
       (hits === null ? "" : '<span class="hits">'+hits.toLocaleString()+'×</span>');
@@ -1363,19 +1531,17 @@ async function ingest(input){
   }
 
   const touched = Object.keys(built);
+  let skipped = 0;
   touched.forEach(id => {
     traits[id] = built[id];
     art[id] = byCat[id];
+    if((removed[id] || []).length){
+      shelf[id] = shelf[id] || {};
+      traits[id] = traits[id].filter(t => { if(isRemoved(id, t.name)){ shelf[id][t.name] = t; skipped++; return false } return true });
+    }
     const saved = savedPcts[id];
-    if(saved){
-      const hasPins = Array.isArray(saved.__pins);
-      traits[id].forEach(t => {
-        if(saved[t.name] != null) t.w = saved[t.name];
-        t.pin = hasPins ? saved.__pins.indexOf(t.name) >= 0 : (saved[t.name] != null);
-      });
-      if(saved.__none != null) noneW[id] = saved.__none;
-      nonePin[id] = hasPins ? saved.__nonePin !== false : true;
-    } else if(nonePin[id] == null) nonePin[id] = true;
+    if(saved) applyRarityRecord(id, saved);
+    else if(nonePin[id] == null) nonePin[id] = true;
     settle(id);
   });
   if(newOnes.length) ones = newOnes;
@@ -1390,7 +1556,7 @@ async function ingest(input){
     if(keep.length && keep.length < cats.length){
       dropped = cats.filter(c => !keep.includes(c)).map(c => c.name);
       cats.filter(c => !keep.includes(c)).forEach(c => {
-        delete traits[c.id]; delete noneW[c.id]; delete nonePin[c.id]; delete art[c.id];
+        delete traits[c.id]; delete noneW[c.id]; delete nonePin[c.id]; delete noneTier[c.id]; delete art[c.id];
       });
       cats = keep;
       if(!catById(selCat)) selCat = cats[0].id;
@@ -1408,7 +1574,8 @@ async function ingest(input){
     " · " + validation.rows.length + " files · " + CANVAS.w + "×" + CANVAS.h;
   st.textContent = imgs.length + " files loaded" +
     (created.length ? " · new categor" + (created.length === 1 ? "y: " : "ies: ") + created.join(", ") : "") + "." +
-    (dropped.length ? " Cleared the unused example categor" + (dropped.length === 1 ? "y" : "ies") + ": " + dropped.join(", ") + "." : "");
+    (dropped.length ? " Cleared the unused example categor" + (dropped.length === 1 ? "y" : "ies") + ": " + dropped.join(", ") + "." : "") +
+    (skipped ? " Left out " + skipped + " removed trait" + (skipped === 1 ? "" : "s") + "." : "");
   persist();
   drawValidation(); drawCats(); drawRarity(); drawRules(); drawGateUI(); refreshBuilder(); syncCfgBox(); generate();
   saveArt();
@@ -1421,7 +1588,8 @@ function drawValidation(){
   $("valCount").textContent = rows.length + " files" + (flagged ? " · " + flagged + " flagged" : "");
   const head = '<tr><th>File</th><th>Category</th><th>Trait</th><th>Size</th><th></th></tr>';
   $("valTable").innerHTML = head + [...rows].sort((a,b) => b.issues.length - a.issues.length).map(r => {
-    const tags = r.issues.length ? r.issues.map(i => '<span class="pill '+i[0]+'">'+i[1]+'</span>').join(" ") : '<span class="pill ok">ok</span>';
+    const tags = (r.layer && isRemoved(r.layer, r.trait) ? '<span class="pill">removed</span> ' : "") +
+      (r.issues.length ? r.issues.map(i => '<span class="pill '+i[0]+'">'+i[1]+'</span>').join(" ") : '<span class="pill ok">ok</span>');
     return '<tr><td style="color:var(--faint)">'+r.rel+'</td><td>' + (r.layer ? catName(r.layer) : '<span style="color:var(--bad)">?</span>') +
       '</td><td>'+r.trait+(r.cls ? ' <span style="color:var(--purple)">'+r.cls+'</span>' : '') + '</td><td>' + (r.w ? r.w+'×'+r.h : '—') + '</td><td>'+tags+'</td></tr>';
   }).join("");
@@ -1470,8 +1638,12 @@ async function saveMeta(){
 function saveMetaSoon(){
   if(restoring || sdbOff) return;
   clearTimeout(metaTimer);
-  metaTimer = setTimeout(saveMeta, 400);
+  metaTimer = setTimeout(() => { metaTimer = null; saveMeta() }, 150);
 }
+/* closing or hiding the tab writes any change still waiting on the timer */
+function flushMeta(){ if(metaTimer){ clearTimeout(metaTimer); metaTimer = null; saveMeta() } }
+addEventListener("pagehide", flushMeta);
+document.addEventListener("visibilitychange", () => { if(document.visibilityState === "hidden") flushMeta() });
 async function saveArt(){
   if(restoring || sdbOff) return;
   const db = await sdb(); if(!db) return;
@@ -1482,7 +1654,7 @@ async function saveArt(){
       const bag = art[c.id] || {};
       for(const trait in bag){
         const f = bag[trait].file; if(!f) continue;
-        const row = (traits[c.id] || []).find(x => x.name === trait);
+        const row = (traits[c.id] || []).find(x => x.name === trait) || (shelf[c.id] || {})[trait];
         st.put({cid:c.id, trait:trait, cls:(row && row.cls) || null, rel:f.name, blob:f});
       }
     });
@@ -1518,7 +1690,7 @@ async function restoreSession(meta){
   try{
     art = {}; ones = []; validation = []; artLoadedFlag = false;
     CANVAS = {w:16, h:16}; WORK = {w:16, h:16};
-    cats = []; traits = {}; noneW = {}; nonePin = {}; rules = []; gate = {on:false, cat:null}; savedPcts = {};
+    cats = []; traits = {}; noneW = {}; nonePin = {}; noneTier = {}; removed = {}; shelf = {}; rules = []; gate = {on:false, cat:null}; savedPcts = {}; tierW = Object.assign({}, TIER_DEFAULT);
     if(meta.cfg) applyCfg(meta.cfg);
     if(!cats.length) resetCats();
     if(meta.collection) Object.assign(collection, meta.collection);
@@ -1849,9 +2021,17 @@ function snapshot(){
     o.__none = Math.round((noneW[c.id]||0) * 100) / 100;
     o.__pins = (traits[c.id]||[]).filter(t => t.pin).map(t => t.name);
     o.__nonePin = nonePin[c.id] !== false;
+    const tiers = {};
+    (traits[c.id]||[]).forEach(t => { if(tierOf(t.tier) !== "common") tiers[t.name] = tierOf(t.tier) });
+    if(Object.keys(tiers).length) o.__tiers = tiers;
+    if(tierOf(noneTier[c.id]) !== "common") o.__noneTier = tierOf(noneTier[c.id]);
     rarity[c.id] = o;
   });
-  return {categories:cats.map(c => ({id:c.id, name:c.name})), rules, gate, rarity};
+  const rm = {};
+  for(const cid in removed) if((removed[cid] || []).length) rm[cid] = removed[cid].slice();
+  const out = {categories:cats.map(c => ({id:c.id, name:c.name})), rules, gate, rarity, removed:rm};
+  if(TIERS.some(t => +tierW[t.id] !== TIER_DEFAULT[t.id])) out.tiers = Object.assign({}, tierW);
+  return out;
 }
 function applyCfg(o){
   if(!o) return;
@@ -1859,31 +2039,28 @@ function applyCfg(o){
     const keep = {}, keepArt = {};
     o.categories.forEach(c => { if(traits[c.id]) keep[c.id] = traits[c.id]; if(art[c.id]) keepArt[c.id] = art[c.id] });
     cats = o.categories.map(c => ({id:c.id, name:c.name}));
-    const t2 = {}, n2 = {}, p2 = {};
-    cats.forEach(c => { t2[c.id] = keep[c.id] || traits[c.id] || []; n2[c.id] = noneW[c.id] || 0; p2[c.id] = nonePin[c.id] !== false });
-    traits = t2; noneW = n2; nonePin = p2;
+    const t2 = {}, n2 = {}, p2 = {}, q2 = {};
+    cats.forEach(c => { t2[c.id] = keep[c.id] || traits[c.id] || []; n2[c.id] = noneW[c.id] || 0;
+                        p2[c.id] = nonePin[c.id] !== false; q2[c.id] = tierOf(noneTier[c.id]) });
+    traits = t2; noneW = n2; nonePin = p2; noneTier = q2;
     const a2 = {}; cats.forEach(c => { if(keepArt[c.id] || art[c.id]) a2[c.id] = keepArt[c.id] || art[c.id] });
     art = a2;
   }
   examplesUntouched = false;
   if(Array.isArray(o.rules)) rules = o.rules;
   if(o.gate) gate = {on:!!o.gate.on, cat:o.gate.cat || (cats.length ? cats[cats.length-1].id : null)};
+  tierW = Object.assign({}, TIER_DEFAULT, (o.tiers && typeof o.tiers === "object") ? o.tiers : {});
+  if(o.removed && typeof o.removed === "object") applyRemoved(o.removed);   // absent = leave removals as they are
   if(o.rarity){
     savedPcts = o.rarity;
     for(const cid in o.rarity){
-      const r = o.rarity[cid];
-      const hasPins = Array.isArray(r.__pins);
-      (traits[cid]||[]).forEach(t => {
-        if(r[t.name] != null) t.w = r[t.name];
-        t.pin = hasPins ? r.__pins.indexOf(t.name) >= 0 : (r[t.name] != null);
-      });
-      if(r.__none != null) noneW[cid] = r.__none;
-      nonePin[cid] = hasPins ? r.__nonePin !== false : true;
+      applyRarityRecord(cid, o.rarity[cid]);
       if(traits[cid] && traits[cid].length) settle(cid);
     }
   }
   if(!selCat || !catById(selCat)) selCat = cats.length ? cats[0].id : null;
   reconcileRules();
+  if(typeof drawTierOdds === "function") drawTierOdds();
 }
 /* ========================= rule reconciliation =========================
    A ruleset written against different category names (Headwear vs Headware,
@@ -1951,6 +2128,12 @@ function ruleTraitGaps(r){
     (r.then.traits || []).forEach(t => { if(!has(r.then.layer, t)) gaps.push(t) });
   return gaps;
 }
+/* broken = names a category that does not exist, or a trait that is neither loaded nor deliberately removed */
+function ruleBroken(r){
+  if(r.dead) return true;
+  const cids = [r.when && r.when.layer, r.then && r.then.layer].filter(Boolean);
+  return ruleTraitGaps(r).some(n => !cids.some(cid => isRemoved(cid, n)));
+}
 function syncCfgBox(){ $("cfgBox").value = JSON.stringify(snapshot(), null, 2) }
 function persist(){
   try{
@@ -1976,7 +2159,7 @@ function loadRuleset(file){
     if(!o || (!Array.isArray(o.rules) && !o.rarity && !o.categories)){ $("rulesStatus").textContent = "That file has no rules, categories or rarity in it. Nothing changed."; return }
     applyCfg(o);
     persist(); syncCfgBox(); drawCats(); drawRarity(); drawRules(); drawGateUI(); refreshBuilder(); generate();
-    const broken = rules.filter(rule => rule.dead || ruleTraitGaps(rule).length).length;
+    const broken = rules.filter(ruleBroken).length;
     $("rulesStatus").textContent = "Loaded " + file.name + " · " + rules.length + " rule" + (rules.length === 1 ? "" : "s") +
       (ruleFix.fixed.length ? " · " + ruleFix.fixed.length + " matched to your categories" : "") +
       (broken ? " · " + broken + " not matching anything yet, see the list" : "") + ".";
@@ -2003,7 +2186,7 @@ async function saveProject(){
     for(const c of cats){
       const a = art[c.id]; if(!a) continue;
       const used = new Set(); layers[c.id] = [];
-      for(const t of (traits[c.id]||[])){
+      for(const t of (traits[c.id]||[]).concat(Object.values(shelf[c.id] || {}))){
         const e = a[t.name]; if(!e || !e.file) continue;
         const path = place(c.name, t.name, e.file, used);
         files.push({name:path, data:new Uint8Array(await e.file.arrayBuffer())});
@@ -2041,7 +2224,7 @@ async function openProject(file){
     const project = JSON.parse(new TextDecoder().decode(await unzipEntry(pj)));
     art = {}; ones = []; validation = []; artLoadedFlag = false;
     CANVAS = {w:16, h:16}; WORK = {w:16, h:16};
-    cats = []; traits = {}; noneW = {}; nonePin = {}; rules = []; gate = {on:false, cat:null}; savedPcts = {};
+    cats = []; traits = {}; noneW = {}; nonePin = {}; noneTier = {}; removed = {}; shelf = {}; rules = []; gate = {on:false, cat:null}; savedPcts = {}; tierW = Object.assign({}, TIER_DEFAULT);
     if(project.ruleset) applyCfg(project.ruleset);
     if(!cats.length) resetCats();
     if(project.collection) Object.assign(collection, project.collection);
@@ -2124,6 +2307,11 @@ $("btnAddCat").addEventListener("click", () => {
   persist(); drawCats(); drawRarity(); refreshBuilder(); drawGateUI(); syncCfgBox();
 });
 $("btnEven").addEventListener("click", () => { if(!selCat) return; evenShares(selCat); persist(); drawCats(); drawRarity(); syncCfgBox(); generate() });
+$("btnTierReset").addEventListener("click", () => {
+  tierW = Object.assign({}, TIER_DEFAULT);
+  cats.forEach(c => { if((traits[c.id]||[]).length) spread(c.id) });
+  persist(); drawCats(); drawRarity(); drawTierOdds(); syncCfgBox(); generate();
+});
 $("btnBalance").addEventListener("click", () => { if(!selCat) return; pctNote = ""; renormalize(selCat); persist(); drawCats(); drawRarity(); syncCfgBox(); generate() });
 $("btnClearNone").addEventListener("click", () => { if(!selCat) return; setPct(selCat, -1, 0); persist(); drawCats(); drawRarity(); syncCfgBox(); generate() });
 
@@ -2147,7 +2335,7 @@ $("btnApply").addEventListener("click", () => {
   try{
     applyCfg(JSON.parse($("cfgBox").value));
     persist(); drawCats(); drawRarity(); drawRules(); drawGateUI(); refreshBuilder(); generate();
-    const broken = rules.filter(r => r.dead || ruleTraitGaps(r).length).length;
+    const broken = rules.filter(ruleBroken).length;
     $("rulesStatus").textContent = "Applied · " + rules.length + " rule" + (rules.length === 1 ? "" : "s") +
       (ruleFix.fixed.length ? " · " + ruleFix.fixed.length + " matched to your categories" : "") +
       (broken ? " · " + broken + " not matching anything yet, see the list" : "") + ".";
@@ -2205,7 +2393,7 @@ resetCats();
 if(!cats.length) resetCats();
 if(!$("seed").value) $("seed").value = newSeed();
 syncCollectionInputs();
-drawCats(); drawRarity(); drawRules(); drawGateUI(); refreshBuilder(); syncCfgBox();
+drawCats(); drawRarity(); drawTierOdds(); drawRules(); drawGateUI(); refreshBuilder(); syncCfgBox();
 generate(false);
 updateExportBar();
 bootSession();
