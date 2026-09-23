@@ -61,7 +61,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "(function(){try{var q=location.search||'';var skip=q.indexOf('twitter_error=')!==-1||q.indexOf('twitter=')!==-1||sessionStorage.getItem('nf_oauth_return')==='1';if(skip){document.documentElement.classList.add('nf-booted');sessionStorage.removeItem('nf_oauth_return');}}catch(e){}})();",
+              "(function(){try{var q=location.search||'';var oauth=q.indexOf('twitter_error=')!==-1||q.indexOf('twitter=')!==-1||sessionStorage.getItem('nf_oauth_return')==='1';var entered=sessionStorage.getItem('nf_press_start_done')==='1';if(oauth)sessionStorage.removeItem('nf_oauth_return');if(oauth||entered){document.documentElement.classList.add('nf-booted');}}catch(e){}})();",
           }}
         />
         <style
