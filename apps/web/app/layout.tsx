@@ -70,7 +70,8 @@ export default function RootLayout(props: { children: React.ReactNode }) {
             __html:
               "html:not(.nf-booted) main,html:not(.nf-booted) footer{visibility:hidden!important;pointer-events:none!important}" +
               "#nf-boot-veil{position:fixed;inset:0;z-index:70;background:#05040a}" +
-              "html.nf-booted #nf-boot-veil{display:none}",
+              "html.nf-booted #nf-boot-veil{display:none}" +
+              "html.nf-booted .press-start-gate{display:none!important;pointer-events:none!important}",
           }}
         />
         <div id="nf-boot-veil" aria-hidden />
