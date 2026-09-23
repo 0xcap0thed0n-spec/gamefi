@@ -34,7 +34,7 @@ export const site = {
     body: [
       "Daylight is for billboards and towers. After dark, Nightfall City belongs to everyone the system left behind.",
       "Vantacorp bought or crushed every rival, replaced work with machines, and pays a thin stipend that often finds its way back through The Villa casino on The Strip.",
-      "Capo answered with the Syndicate: Operators on “the frequency,” one hard rule — no civilians. Jobs and Saturday-night heists hit the corps, never the Flats.",
+      "Capo answered with the Syndicate: Operators on the frequency. Jobs and Saturday-night heists hit the corps, never the Flats.",
     ],
     note: "",
   },
