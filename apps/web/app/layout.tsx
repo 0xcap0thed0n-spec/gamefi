@@ -15,7 +15,11 @@ const pixel = Press_Start_2P({
   weight: ["400"],
 });
 
+const siteUrl = "https://nightfallcity.vercel.app";
+const shareImage = `${siteUrl}/images/logo.jpg`;
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     default: `${site.name} | Retro Cyberpunk NFT`,
     template: `%s | ${site.name}`,
@@ -28,6 +32,25 @@ export const metadata: Metadata = {
     ],
     apple: [{ url: "/apple-icon.png", type: "image/png", sizes: "180x180" }],
     shortcut: "/favicon.png",
+  },
+  openGraph: {
+    type: "website",
+    url: siteUrl,
+    siteName: site.name,
+    title: `${site.name} | Retro Cyberpunk NFT`,
+    description: site.description,
+    images: [
+      {
+        url: shareImage,
+        alt: `${site.name} logo`,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${site.name} | Retro Cyberpunk NFT`,
+    description: site.description,
+    images: [shareImage],
   },
 };
 
