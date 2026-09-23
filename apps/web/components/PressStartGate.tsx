@@ -7,6 +7,7 @@ import { useAudio } from "./AudioProvider";
 /** Boot load after Start — theme starts when this finishes (same beat as the handoff). */
 const LOAD_MS = 2400;
 const FADE_MS = 900;
+const PRESS_START_KEY = "nf_press_start_done";
 
 type Phase = "idle" | "loading" | "out";
 
@@ -19,27 +20,48 @@ function loadEase(t: number): number {
   return 88 + ((t - 0.78) / 0.22) * 12;
 }
 
+function markPressStartDone() {
+  try {
+    sessionStorage.setItem(PRESS_START_KEY, "1");
+  } catch {
+    /* ignore */
+  }
+}
+
+/** True when this tab already passed Press Start (or OAuth return). */
+function shouldSkipPressStart(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    if (sessionStorage.getItem(PRESS_START_KEY) === "1") return true;
+    const q = new URLSearchParams(window.location.search);
+    if (q.has("twitter_error") || q.has("twitter")) return true;
+    if (sessionStorage.getItem("nf_oauth_return") === "1") return true;
+  } catch {
+    /* ignore */
+  }
+  return false;
+}
+
 export function PressStartGate() {
   const { pressStart } = site;
   const { playClick, startImmersiveTheme } = useAudio();
-  // open starts true so SSR + first paint cover the site (no flash before hydrate).
-  const [open, setOpen] = useState(true);
+  // Prefer skipping immediately on the client when this tab already entered,
+  // so MENU / logo returns don't flash Press Start (inline script also sets nf-booted).
+  const [open, setOpen] = useState(() => !shouldSkipPressStart());
   const [phase, setPhase] = useState<Phase>("idle");
   const [percent, setPercent] = useState(0);
 
   useEffect(() => {
-    // Skip Press Start for this tab once they've already entered
-    // (logo / MENU / Trait Forge hops), or on OAuth return.
     try {
       const q = new URLSearchParams(window.location.search);
-      const alreadyIn =
-        sessionStorage.getItem("nf_press_start_done") === "1";
-      const oauth =
+      if (
         q.has("twitter_error") ||
         q.has("twitter") ||
-        sessionStorage.getItem("nf_oauth_return") === "1";
-      if (oauth) sessionStorage.removeItem("nf_oauth_return");
-      if (alreadyIn || oauth) {
+        sessionStorage.getItem("nf_oauth_return") === "1"
+      ) {
+        sessionStorage.removeItem("nf_oauth_return");
+      }
+      if (shouldSkipPressStart()) {
         document.documentElement.classList.add("nf-booted");
         setOpen(false);
       }
@@ -51,6 +73,8 @@ export function PressStartGate() {
   const beginBoot = useCallback(() => {
     if (phase !== "idle") return;
     playClick();
+    // Remember as soon as they commit — so a mid-boot hop still skips on return.
+    markPressStartDone();
     setPercent(0);
     setPhase("loading");
   }, [phase, playClick]);
@@ -80,11 +104,7 @@ export function PressStartGate() {
   useEffect(() => {
     if (phase !== "out") return;
     const done = window.setTimeout(() => {
-      try {
-        sessionStorage.setItem("nf_press_start_done", "1");
-      } catch {
-        /* ignore */
-      }
+      markPressStartDone();
       setOpen(false);
       setPhase("idle");
       setPercent(0);
@@ -106,6 +126,13 @@ export function PressStartGate() {
 
   useEffect(() => {
     if (!open) return;
+    // Never strip nf-booted if this tab already entered — that was re-showing
+    // the gate (+ boot veil) when returning from Trait Forge via MENU.
+    if (shouldSkipPressStart()) {
+      document.documentElement.classList.add("nf-booted");
+      setOpen(false);
+      return;
+    }
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     document.documentElement.classList.remove("nf-booted");
