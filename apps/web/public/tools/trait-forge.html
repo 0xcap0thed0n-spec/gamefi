@@ -80,6 +80,11 @@
   .chk{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--dim);cursor:pointer}
   .chk input{accent-color:var(--pink);width:15px;height:15px}
   .bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding-block:14px;border-bottom:1px solid var(--line)}
+  .resume{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px;padding:12px 14px;border-radius:4px;
+    border:1px solid rgba(53,228,245,.34);background:linear-gradient(180deg,rgba(24,15,48,.95),rgba(13,8,28,.95))}
+  .resume .rtext{font-size:12.5px;color:var(--txt);min-width:0}
+  .resume .rtext b{color:var(--cyan);font-weight:600}
+  .resume .rtext small{display:block;font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:2px}
   .spacer{flex:1 1 auto}
   .sep{width:1px;align-self:stretch;background:var(--line-hi);margin-inline:4px}
 
@@ -111,6 +116,12 @@
   .cats{list-style:none;margin:0;padding:0}
   .cats li{display:grid;grid-template-columns:22px minmax(0,1fr) auto auto;gap:7px;align-items:center;padding:8px 10px 8px 12px;
     border-bottom:1px solid var(--line);cursor:pointer}
+  .exnote{padding:9px 14px;border-bottom:1px solid var(--line);background:rgba(154,107,255,.09);
+    font-size:11.5px;line-height:1.5;color:var(--dim)}
+  .exnote b{color:var(--purple);font-weight:600}
+  .cats li.example .cname{color:var(--dim)}
+  .cats .extag{font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--purple);
+    border:1px solid rgba(154,107,255,.4);border-radius:3px;padding:0 4px;margin-left:6px;white-space:nowrap}
   .cats .nonebox{display:flex;align-items:center;gap:4px}
   .cats .nonebox input{width:38px;text-align:right;padding:3px 5px;font-size:11px}
   .cats .nonebox small{font-family:var(--mono);font-size:8.5px;letter-spacing:.06em;color:var(--faint);line-height:1.1;white-space:nowrap}
@@ -271,6 +282,13 @@
     <button id="btnSaveProject" disabled title="Save every layer, rule and setting as one file">Save project</button>
   </nav>
 
+  <div class="resume" id="resumeBar" hidden>
+    <span class="rtext" id="resumeText"></span>
+    <span class="spacer"></span>
+    <button class="primary small" id="btnResume">Pick up where I left off</button>
+    <button class="small ghost" id="btnDiscard">Start fresh</button>
+  </div>
+
   <!-- ============ STEP 1 ============ -->
   <section class="stepbody narrow" id="step1">
     <div class="panel">
@@ -311,6 +329,9 @@
       <div>
         <section class="panel">
           <h2>Categories <span class="count" id="catCount"></span></h2>
+          <div class="exnote" id="exNote" hidden>
+            <b>These are examples</b>, here to show the idea. Load your own trait folders and they are replaced by your categories. Anything you do not load into is cleared.
+          </div>
           <ul class="cats" id="catList"></ul>
           <div class="pad" style="border-top:1px solid var(--line)">
             <p class="note">Drawn bottom to top — the first one is the background, the last is drawn over everything. Use ↑ ↓ to reorder, ✎ to rename, × to remove.</p>
@@ -504,6 +525,7 @@ let collection = {name:"Nightfall City", desc:"", base:"", start:1, ones:"random
 let CANVAS = {w:16, h:16}, WORK = {w:16, h:16};
 let validation = [], lastRun = null, selCat = null, inspTok = null, page = 0;
 let artLoadedFlag = false;
+let examplesUntouched = false;   // the starting category list is still the untouched example set
 const artLoaded = () => artLoadedFlag;
 
 const slugId = s => (s||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"") || "cat";
@@ -528,6 +550,7 @@ function resetCats(){
   cats = []; traits = {}; noneW = {}; nonePin = {};
   DEFAULT_CATS.forEach(n => addCat(n));
   selCat = cats[0].id;
+  examplesUntouched = true;
 }
 
 /* ========================= rarity as percentages =========================
@@ -929,7 +952,9 @@ function drawCoverage(){
 /* ========================= categories UI ========================= */
 function drawCats(){
   const ul = $("catList"); ul.textContent = "";
-  $("catCount").textContent = cats.length + (cats.length === 1 ? " category" : " categories");
+  $("catCount").textContent = cats.length + (cats.length === 1 ? " category" : " categories") +
+    (examplesUntouched ? " · examples" : "");
+  $("exNote").hidden = !examplesUntouched;
   if(!selCat || !catById(selCat)) selCat = cats.length ? cats[0].id : null;
   cats.forEach((c, i) => {
     const li = document.createElement("li");
@@ -943,6 +968,11 @@ function drawCats(){
     sm.innerHTML = n + " traits" + (loaded ? ' · <span class="hasart">' + loaded + " loaded</span>" : "") +
       (c.id === gatedCat() ? ' · <span class="gate">class-gated</span>' : "");
     nm.appendChild(sm);
+    if(examplesUntouched){
+      li.classList.add("example");
+      const ex = document.createElement("span"); ex.className = "extag"; ex.textContent = "example";
+      sm.appendChild(ex);
+    }
     nm.title = c.name + " · " + n + " traits" + (loaded ? ", " + loaded + " with art" : "");
     const nb = document.createElement("span");
     nb.className = "nonebox" + ((noneW[c.id] || 0) > 0 ? " set" : "");
@@ -987,6 +1017,7 @@ function moveCat(i, dir){
   const j = i + dir;
   if(j < 0 || j >= cats.length) return;
   const t = cats[i]; cats[i] = cats[j]; cats[j] = t;
+  examplesUntouched = false;
   persist(); drawCats(); refreshBuilder(); drawGateUI(); generate();
 }
 function renameCat(c){
@@ -995,11 +1026,13 @@ function renameCat(c){
   const clean = name.trim();
   if(!clean) return;
   c.name = clean;
+  examplesUntouched = false;
   persist(); drawCats(); drawRarity(); refreshBuilder(); drawGateUI(); syncCfgBox();
 }
 function removeCat(c){
   if(!confirm('Remove the "' + c.name + '" category? Its traits and any rules about it go too.')) return;
   cats = cats.filter(x => x.id !== c.id);
+  examplesUntouched = false;
   delete traits[c.id]; delete noneW[c.id]; delete nonePin[c.id]; delete art[c.id];
   rules = rules.filter(r => r.when.layer !== c.id && r.then.layer !== c.id);
   if(gate.cat === c.id) gate.cat = cats.length ? cats[0].id : null;
@@ -1054,10 +1087,19 @@ function drawRarity(){
     box.appendChild(d);
   }
   const real = rows.reduce((a, r) => a + r.get(), 0);
-  const off = Math.abs(real - 100) >= 0.05;
+  const off = list.length > 0 && Math.abs(real - 100) >= 0.05;
   const tot = off ? real : pcts.reduce((a,b) => a + b, 0);
-  $("rarityTotal").textContent = tot.toFixed(1) + "%";
+  $("rarityTotal").textContent = list.length ? tot.toFixed(1) + "%" : "—";
   $("rarityTotal").style.color = off ? "var(--warn)" : "";
+  const rc = $("rarityCount"); rc.textContent = list.length + " traits";
+  if(list.length){
+    rc.append(" · ");
+    const tp = document.createElement("span");
+    tp.textContent = tot.toFixed(1) + "%";
+    tp.style.color = off ? "var(--warn)" : "var(--cyan)";
+    tp.title = off ? "These shares do not add to 100%, so they are used as ratios." : "The category totals 100%.";
+    rc.append(tp);
+  }
   $("btnBalance").hidden = !off;
   const note = $("rarityNote");
   const msg = pctNote || (off ? "Every row is set by hand and they total " + tot.toFixed(1) +
@@ -1195,6 +1237,7 @@ async function ingest(input){
     return;
   }
   st.textContent = "Loading " + imgs.length + " files…";
+  const pruneExamples = examplesUntouched;
 
   const decoded = [];
   for(const it of imgs){
@@ -1269,6 +1312,25 @@ async function ingest(input){
     settle(id);
   });
   if(newOnes.length) ones = newOnes;
+
+  /* first real load into the starting example list: drop the example categories
+     nothing was loaded into, so the stack is only what they actually have */
+  let dropped = [];
+  if(pruneExamples && touched.length){
+    const keep = cats.filter(c => (traits[c.id] || []).length ||
+                                  rules.some(r => r.when.layer === c.id || r.then.layer === c.id) ||
+                                  gate.cat === c.id && gate.on);
+    if(keep.length && keep.length < cats.length){
+      dropped = cats.filter(c => !keep.includes(c)).map(c => c.name);
+      cats.filter(c => !keep.includes(c)).forEach(c => {
+        delete traits[c.id]; delete noneW[c.id]; delete nonePin[c.id]; delete art[c.id];
+      });
+      cats = keep;
+      if(!catById(selCat)) selCat = cats[0].id;
+    }
+  }
+  if(touched.length) examplesUntouched = false;
+
   artLoadedFlag = cats.some(c => art[c.id] && Object.keys(art[c.id]).length) || ones.length > 0;
 
   const kept = (validation && validation.rows ? validation.rows : []).filter(r => r.layer && r.layer !== "oneofone" && !touched.includes(r.layer));
@@ -1277,9 +1339,12 @@ async function ingest(input){
   $("modeDot").classList.toggle("live", artLoadedFlag);
   $("modeTxt").textContent = withArt + "/" + cats.length + " categories" + (ones.length ? " · " + ones.length + " 1-of-1s" : "") +
     " · " + validation.rows.length + " files · " + CANVAS.w + "×" + CANVAS.h;
-  st.textContent = imgs.length + " files loaded" + (created.length ? " · new categor" + (created.length === 1 ? "y: " : "ies: ") + created.join(", ") : "") + ".";
+  st.textContent = imgs.length + " files loaded" +
+    (created.length ? " · new categor" + (created.length === 1 ? "y: " : "ies: ") + created.join(", ") : "") + "." +
+    (dropped.length ? " Cleared the unused example categor" + (dropped.length === 1 ? "y" : "ies") + ": " + dropped.join(", ") + "." : "");
   persist();
   drawValidation(); drawCats(); drawRarity(); drawGateUI(); refreshBuilder(); syncCfgBox(); generate();
+  saveArt();
   return {files:imgs.length, created};
 }
 
@@ -1293,6 +1358,188 @@ function drawValidation(){
     return '<tr><td style="color:var(--faint)">'+r.rel+'</td><td>' + (r.layer ? catName(r.layer) : '<span style="color:var(--bad)">?</span>') +
       '</td><td>'+r.trait+(r.cls ? ' <span style="color:var(--purple)">'+r.cls+'</span>' : '') + '</td><td>' + (r.w ? r.w+'×'+r.h : '—') + '</td><td>'+tags+'</td></tr>';
   }).join("");
+}
+
+
+/* ========================= browser session store =========================
+   Everything the tool holds is kept in the browser's own database, images
+   included, so closing the tab does not throw the work away. It is one
+   browser on one machine, it goes when site data is cleared, and a browser
+   short on disk may evict it, so the project file is still the real save. */
+const SDB_NAME = "traitforge.session", SDB_VER = 1;
+let sdbP = null, sdbOff = false, restoring = false, metaTimer = null;
+function sdb(){
+  if(sdbP) return sdbP;
+  sdbP = new Promise(res => {
+    let rq;
+    try{ if(!window.indexedDB) return res(null); rq = indexedDB.open(SDB_NAME, SDB_VER) }
+    catch(e){ return res(null) }
+    rq.onupgradeneeded = () => {
+      const db = rq.result;
+      if(!db.objectStoreNames.contains("meta")) db.createObjectStore("meta");
+      if(!db.objectStoreNames.contains("art")) db.createObjectStore("art", {autoIncrement:true});
+    };
+    rq.onsuccess = () => res(rq.result);
+    rq.onerror = () => res(null);
+    rq.onblocked = () => res(null);
+  });
+  return sdbP;
+}
+const sreq = r => new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error) });
+const sdone = t => new Promise((res, rej) => { t.oncomplete = () => res(true); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error) });
+
+async function saveMeta(){
+  if(restoring || sdbOff) return;
+  const db = await sdb(); if(!db) return;
+  try{
+    const t = db.transaction("meta", "readwrite");
+    t.objectStore("meta").put({
+      when: Date.now(), collection: JSON.parse(JSON.stringify(collection)), cfg: snapshot(),
+      seed: $("seed").value, supply: $("supply").value, canvas: {w:CANVAS.w, h:CANVAS.h}
+    }, "current");
+    await sdone(t);
+  }catch(e){}
+}
+function saveMetaSoon(){
+  if(restoring || sdbOff) return;
+  clearTimeout(metaTimer);
+  metaTimer = setTimeout(saveMeta, 400);
+}
+async function saveArt(){
+  if(restoring || sdbOff) return;
+  const db = await sdb(); if(!db) return;
+  try{
+    const t = db.transaction("art", "readwrite"), st = t.objectStore("art");
+    st.clear();
+    cats.forEach(c => {
+      const bag = art[c.id] || {};
+      for(const trait in bag){
+        const f = bag[trait].file; if(!f) continue;
+        const row = (traits[c.id] || []).find(x => x.name === trait);
+        st.put({cid:c.id, trait:trait, cls:(row && row.cls) || null, rel:f.name, blob:f});
+      }
+    });
+    ones.forEach(o => { if(o.file) st.put({cid:"oneofone", trait:o.name, cls:null, rel:o.file.name, blob:o.file}) });
+    await sdone(t);
+    if(navigator.storage && navigator.storage.persist) navigator.storage.persisted().then(p => { if(!p) navigator.storage.persist().catch(() => {}) }).catch(() => {});
+  }catch(e){
+    sdbOff = true;
+    const st = $("loadStatus");
+    if(st && !/browser storage/.test(st.textContent))
+      st.textContent = (st.textContent ? st.textContent + " " : "") +
+        "These layers are too big to keep in browser storage, so this session will not come back on its own. Use Save project.";
+  }
+  saveMeta();
+}
+async function peekSession(){
+  const db = await sdb();
+  if(!db){
+    try{
+      const o = JSON.parse(localStorage.getItem("ntf.v2") || "null");
+      return o ? {meta:o, images:0, thin:true} : null;
+    }catch(e){ return null }
+  }
+  try{
+    const meta = await sreq(db.transaction("meta").objectStore("meta").get("current"));
+    if(!meta) return null;
+    const images = await sreq(db.transaction("art").objectStore("art").count());
+    return {meta, images};
+  }catch(e){ return null }
+}
+async function restoreSession(meta){
+  restoring = true;
+  try{
+    art = {}; ones = []; validation = []; artLoadedFlag = false;
+    CANVAS = {w:16, h:16}; WORK = {w:16, h:16};
+    cats = []; traits = {}; noneW = {}; nonePin = {}; rules = []; gate = {on:false, cat:null}; savedPcts = {};
+    if(meta.cfg) applyCfg(meta.cfg);
+    if(!cats.length) resetCats();
+    if(meta.collection) Object.assign(collection, meta.collection);
+    collection.start = parseInt(collection.start, 10) === 0 ? 0 : 1;
+    syncCollectionInputs();
+    if(meta.seed != null) $("seed").value = meta.seed;
+    if(meta.supply != null) $("supply").value = meta.supply;
+    let items = [];
+    const db = await sdb();
+    if(db){
+      const recs = await sreq(db.transaction("art").objectStore("art").getAll());
+      items = recs.map(r => ({
+        file: (r.blob instanceof File) ? r.blob : new File([r.blob], r.rel || (r.trait + ".png"), {type:"image/png"}),
+        rel: r.rel || (r.cid + "/" + r.trait + ".png"),
+        parsed: {layer:r.cid, trait:r.trait, cls:r.cls || null}
+      }));
+    }
+    drawCats(); drawRarity(); drawRules(); drawGateUI(); refreshBuilder(); syncCfgBox();
+    if(items.length){ restoring = false; await ingest(items); restoring = true }
+    else generate();
+    return items.length;
+  } finally { restoring = false }
+}
+async function clearSession(){
+  const db = await sdb();
+  if(db){
+    try{
+      const t = db.transaction(["meta","art"], "readwrite");
+      t.objectStore("meta").delete("current");
+      t.objectStore("art").clear();
+      await sdone(t);
+    }catch(e){}
+  }
+  try{ localStorage.removeItem("ntf.v2") }catch(e){}
+}
+function agoText(ms){
+  const d = Math.max(0, Date.now() - ms), m = Math.round(d / 60000);
+  if(m < 1) return "a moment ago";
+  if(m < 60) return m + (m === 1 ? " minute ago" : " minutes ago");
+  const h = Math.round(m / 60);
+  if(h < 24) return h + (h === 1 ? " hour ago" : " hours ago");
+  const dy = Math.round(h / 24);
+  if(dy === 1) return "yesterday";
+  if(dy < 30) return dy + " days ago";
+  return "on " + new Date(ms).toLocaleDateString();
+}
+async function bootSession(){
+  let found = null;
+  try{ found = await peekSession() }catch(e){ found = null }
+  if(!found) return;
+  const m = found.meta, cfg = m.cfg || {};
+  const nRules = (cfg.rules || []).length;
+  const nCats = (cfg.categories || []).length;
+  const supply = parseInt(m.supply, 10) || 0;
+  const worth = found.images > 0 || nRules > 0 || supply > 0;
+  if(!worth) return;
+  const bits = [];
+  if(found.images) bits.push(found.images + (found.images === 1 ? " image" : " images"));
+  if(nCats) bits.push(nCats + (nCats === 1 ? " category" : " categories"));
+  if(nRules) bits.push(nRules + (nRules === 1 ? " rule" : " rules"));
+  if(supply) bits.push("supply " + supply);
+  const name = (m.collection && m.collection.name) || "your collection";
+  const txt = $("resumeText");
+  txt.innerHTML = "";
+  const head = document.createElement("span");
+  head.append("Found your last session for ");
+  const bn = document.createElement("b"); bn.textContent = name; head.append(bn);
+  head.append(", saved " + agoText(m.when || Date.now()) + ".");
+  const sub = document.createElement("small");
+  sub.textContent = bits.join(" · ") + (found.thin ? " · settings only, the layers will need loading again" : "");
+  txt.append(head, sub);
+  $("resumeBar").hidden = false;
+  $("btnResume").onclick = async () => {
+    $("btnResume").disabled = true; $("btnResume").textContent = "Restoring…";
+    try{
+      const n = await restoreSession(m);
+      $("loadStatus").textContent = n ? "Restored your last session — " + n + " images." : "Restored your settings. Load the layer folder to carry on.";
+    }catch(e){
+      $("loadStatus").textContent = "Couldn't restore that session.";
+    }
+    $("resumeBar").hidden = true;
+    $("btnResume").disabled = false; $("btnResume").textContent = "Pick up where I left off";
+  };
+  $("btnDiscard").onclick = async () => {
+    $("resumeBar").hidden = true;
+    await clearSession();
+    saveMetaSoon();
+  };
 }
 
 /* ========================= metadata + export ========================= */
@@ -1551,6 +1798,7 @@ function applyCfg(o){
     const a2 = {}; cats.forEach(c => { if(keepArt[c.id] || art[c.id]) a2[c.id] = keepArt[c.id] || art[c.id] });
     art = a2;
   }
+  examplesUntouched = false;
   if(Array.isArray(o.rules)) rules = o.rules;
   if(o.gate) gate = {on:!!o.gate.on, cat:o.gate.cat || (cats.length ? cats[cats.length-1].id : null)};
   if(o.rarity){
@@ -1574,18 +1822,9 @@ function persist(){
   try{
     localStorage.setItem("ntf.v2", JSON.stringify({collection, cfg:snapshot(), seed:$("seed").value, supply:$("supply").value}));
   }catch(e){}
+  if(typeof saveMetaSoon === "function") saveMetaSoon();
 }
-function restore(){
-  try{
-    const o = JSON.parse(localStorage.getItem("ntf.v2") || "null");
-    if(!o) return false;
-    if(o.collection) Object.assign(collection, o.collection);
-    if(o.cfg) applyCfg(o.cfg);
-    if(o.seed) $("seed").value = o.seed;
-    if(o.supply != null) $("supply").value = o.supply;
-    return true;
-  }catch(e){ return false }
-}
+
 async function saveRuleset(){
   const d = new Date(), stamp = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
   const body = Object.assign({format:"trait-forge-ruleset", version:2, saved:new Date().toISOString()}, snapshot());
@@ -1745,11 +1984,13 @@ $("btnClear").addEventListener("click", () => {
   $("modeDot").classList.remove("live"); $("modeTxt").textContent = "Awaiting layers";
   $("valTable").innerHTML = ""; $("valCount").textContent = ""; $("loadStatus").textContent = "";
   drawCats(); drawRarity(); drawGateUI(); refreshBuilder(); syncCfgBox(); generate();
+  saveArt();
 });
 $("btnAddCat").addEventListener("click", () => {
   const name = prompt("New category name (e.g. Held, Mouth, Aura)");
   if(name == null || !name.trim()) return;
   addCat(name.trim());
+  examplesUntouched = false;
   selCat = cats[cats.length-1].id;
   persist(); drawCats(); drawRarity(); refreshBuilder(); drawGateUI(); syncCfgBox();
 });
@@ -1806,13 +2047,13 @@ $("btnSavePng").addEventListener("click", () => { if(inspTok) saveOne(inspTok, $
 
 /* ========================= boot ========================= */
 resetCats();
-restore();
 if(!cats.length) resetCats();
 if(!$("seed").value) $("seed").value = newSeed();
 syncCollectionInputs();
 drawCats(); drawRarity(); drawRules(); drawGateUI(); refreshBuilder(); syncCfgBox();
 generate(false);
 updateExportBar();
+bootSession();
 </script>
 
 </body>
