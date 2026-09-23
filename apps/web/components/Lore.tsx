@@ -1,8 +1,10 @@
 import { site } from "@/content/site";
 
 export function Lore() {
-  const { lore, assets } = site;
+  const { lore } = site;
   const note = (lore.note ?? "").trim();
+  const image = "image" in lore ? String(lore.image || "") : "";
+  const imageAlt = "imageAlt" in lore ? String(lore.imageAlt || "") : "";
 
   return (
     <section
@@ -12,7 +14,7 @@ export function Lore() {
       <div
         className="neon-panel-frame neon-card relative overflow-hidden p-6 sm:p-8"
         style={{
-          backgroundImage: `linear-gradient(rgba(8, 6, 18, 0.88), rgba(8, 6, 18, 0.92)), url(${assets.neonPanel})`,
+          backgroundImage: `linear-gradient(rgba(8, 6, 18, 0.88), rgba(8, 6, 18, 0.92)), url(${site.assets.neonPanel})`,
         }}
       >
         <div className="relative z-10">
@@ -22,6 +24,16 @@ export function Lore() {
           <h2 className="mt-4 text-sm uppercase tracking-wide text-white sm:text-base">
             {lore.title}
           </h2>
+          {image ? (
+            <div className="mt-6 overflow-hidden rounded-sm border border-neon-pink/30 shadow-glow-pink">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={image}
+                alt={imageAlt || lore.title}
+                className="h-auto w-full object-cover"
+              />
+            </div>
+          ) : null}
           <div className="mt-6 space-y-4 text-[9px] leading-relaxed text-zinc-300 sm:text-[10px]">
             {lore.body.map((paragraph, i) => (
               <p key={i}>{paragraph}</p>
