@@ -272,8 +272,23 @@
   .pager .pinfo{font-family:var(--mono);font-size:11.5px;color:var(--dim);font-variant-numeric:tabular-nums}
 
   /* inspector */
-  .insp{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;padding:14px}
-  .insp canvas{border:1px solid var(--line);border-radius:3px;width:168px;height:auto;background:#0e0a1c}
+  .insp{display:grid;grid-template-columns:minmax(0,440px) minmax(0,1fr);gap:20px;padding:16px;align-items:start}
+  .insp canvas{border:1px solid var(--line);border-radius:3px;width:100%;max-width:440px;height:auto;background:#0e0a1c}
+  @media (max-width:900px){ .insp{grid-template-columns:minmax(0,1fr)} .insp canvas{max-width:440px} }
+  .rankline{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px;margin-bottom:12px}
+  .rankline .rk{font-family:var(--disp);font-weight:700;font-size:20px;color:var(--txt)}
+  .rankline .rk b{color:var(--cyan)}
+  .rankline .rs{font-family:var(--mono);font-size:11px;color:var(--faint)}
+  ul.traits.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;font-family:inherit}
+  ul.traits.cards li{display:block;border:1px solid var(--line);border-radius:4px;padding:9px 11px;background:rgba(17,10,36,.55)}
+  ul.traits.cards li:last-child{border-bottom:1px solid var(--line)}
+  ul.traits.cards .tk{display:block;font-family:var(--pix);font-size:8.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--faint)}
+  ul.traits.cards .tv{display:block;font-weight:600;font-size:13.5px;margin-top:3px;color:var(--txt);overflow-wrap:anywhere}
+  ul.traits.cards .tv.none{color:var(--faint);font-weight:400}
+  ul.traits.cards .tv.sup{color:var(--faint);text-decoration:line-through;text-decoration-color:rgba(255,179,71,.6)}
+  ul.traits.cards .tv.noart{color:var(--warn)}
+  ul.traits.cards .tp{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:6px;font-family:var(--mono);font-size:10.5px;color:var(--dim)}
+  ul.traits.cards .tp b{color:var(--txt);font-weight:600}
   .traits{list-style:none;margin:0;padding:0;font-family:var(--mono);font-size:11.5px}
   .traits li{display:flex;gap:8px;padding:3px 0;border-bottom:1px dotted var(--line)}
   .traits li:last-child{border-bottom:0}
@@ -282,6 +297,21 @@
   .traits .v.none{color:var(--faint);font-style:italic}
   .traits .v.sup{color:var(--cyan)}
   .traits .v.noart{color:var(--warn)}
+  .misslist{margin-top:12px;display:grid;gap:8px}
+  .missrow{border:1px solid var(--line);border-left:3px solid var(--bad);border-radius:3px;padding:9px 12px;background:rgba(10,6,23,.6)}
+  .missrow.rare{border-left-color:var(--warn)}
+  .missrow .mh{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+  .missrow .mtag{font-family:var(--pix);font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border-radius:2px;
+    color:var(--bad);border:1px solid rgba(255,59,107,.45)}
+  .missrow.rare .mtag{color:var(--warn);border-color:rgba(255,179,71,.45)}
+  .missrow .mn{font-weight:600;font-size:12.5px}
+  .missrow .mw{font-size:12px;color:var(--dim);margin-top:4px;line-height:1.5}
+  .missrow .mr{font-family:var(--mono);font-size:10.5px;color:var(--warn);margin-top:5px;line-height:1.6}
+  .tierchip{font-family:var(--mono);font-size:9.5px;padding:1px 6px;border-radius:2px;border:1px solid var(--line-hi);white-space:nowrap}
+  .tierchip.t-common{color:#c9c3e0} .tierchip.t-uncommon{color:var(--ok);border-color:rgba(61,220,151,.4)}
+  .tierchip.t-rare{color:#4aa8ff;border-color:rgba(74,168,255,.45)} .tierchip.t-epic{color:var(--purple);border-color:rgba(154,107,255,.5)}
+  .tierchip.t-legendary{color:var(--warn);border-color:rgba(255,179,71,.5)} .tierchip.t-mythic{color:var(--pink);border-color:rgba(255,45,149,.55)}
+  .tierchip.t-exact{color:var(--cyan);border-color:rgba(53,228,245,.45)}
   .why{margin-top:10px;font-family:var(--mono);font-size:10.5px;color:var(--warn);line-height:1.65}
   .why span{display:block}
 
@@ -300,6 +330,13 @@
   .stat span{font-family:var(--pix);font-size:8.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
   .stat.alert b{color:var(--bad)}
   .stat.good b{color:var(--ok)}
+  .dllink{margin-top:12px;padding:10px 14px;border:1px solid rgba(61,220,151,.4);border-radius:4px;background:rgba(61,220,151,.07);
+    font-size:12.5px;color:var(--dim);display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+  .dllink[hidden]{display:none!important}
+  .dllink a{color:var(--ok);font-weight:600}
+  .dllink .iconbtn{margin-left:auto}
+  .navstatus{font-family:var(--mono);font-size:11px;color:var(--dim);max-width:52ch;text-align:right;line-height:1.4}
+  .navstatus.ok{color:var(--ok)} .navstatus.bad{color:var(--bad)} .navstatus.busy{color:var(--cyan)}
   .status{flex-basis:100%;font-family:var(--mono);font-size:11px;color:var(--dim);min-height:1em}
   .status:empty{display:none}
   .scalenote{font-family:var(--mono);font-size:11px;color:var(--dim)}
@@ -310,7 +347,7 @@
   .tree b{color:var(--cyan);font-weight:500}
   .tree i{color:var(--faint);font-style:normal}
   footer{border-top:1px solid var(--line);padding-block:18px;color:var(--faint);font-size:10px;font-family:var(--pix);letter-spacing:.05em}
-  @media (max-width:560px){ .insp{grid-template-columns:minmax(0,1fr)} .insp canvas{width:132px} .addrule{grid-template-columns:minmax(0,1fr)} .titleblock{border-left:0;padding-left:0} }
+  @media (max-width:560px){ .insp{grid-template-columns:minmax(0,1fr)} .addrule{grid-template-columns:minmax(0,1fr)} .titleblock{border-left:0;padding-left:0} }
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -345,9 +382,12 @@
     <button class="step" data-step="3"><i>03</i> Rules</button>
     <button class="step" data-step="4"><i>04</i> Generate</button>
     <span class="spacer"></span>
+    <span class="navstatus" id="projStatus" role="status" aria-live="polite"></span>
     <label class="filebtn" title="Open a project file">Open project<input type="file" id="projectIn" accept=".zip,application/zip"></label>
     <button id="btnSaveProject" disabled title="Save every layer, rule and setting as one file">Save project</button>
   </nav>
+
+  <div class="dllink" id="dlLink" hidden role="status"></div>
 
   <div class="resume" id="resumeBar" hidden>
     <span class="rtext" id="resumeText"></span>
@@ -504,6 +544,7 @@
       <button class="primary" id="btnGen">Generate</button>
       <span class="ctl"><label for="seed">Seed</label><input type="text" id="seed" size="12"></span>
       <label class="chk" for="lockSeed"><input type="checkbox" id="lockSeed"> Lock seed</label>
+      <label class="chk" for="uniqueOnly" title="Reroll any token whose visible traits match one already built, so no two tokens look the same"><input type="checkbox" id="uniqueOnly" checked> No duplicates</label>
       <span class="sep" aria-hidden="true"></span>
       <span class="ctl"><label for="zoom">Zoom</label><input type="range" id="zoom" min="48" max="176" step="8" value="96"></span>
       <span class="ctl"><label for="bdrop">Backdrop</label>
@@ -560,6 +601,7 @@
         <div class="insp">
           <canvas id="inspCanvas" width="16" height="16"></canvas>
           <div>
+            <div class="rankline" id="inspRank"></div>
             <ul class="traits" id="inspTraits"></ul>
             <div class="why" id="inspWhy"></div>
             <button id="btnSavePng" style="margin-top:12px">Save PNG</button>
@@ -643,7 +685,7 @@ let art = {};               // catId -> {traitName: {canvas, file}}
 let ones = [];              // [{name, canvas, file}]
 let rules = [];
 let gate = {on:false, cat:null};
-let collection = {name:"Nightfall City", desc:"", base:"", start:1, ones:"random"};
+let collection = {name:"Nightfall City", desc:"", base:"", start:1, ones:"random", unique:true};
 let CANVAS = {w:16, h:16}, WORK = {w:16, h:16};
 let validation = [], lastRun = null, selCat = null, inspTok = null, page = 0;
 let artLoadedFlag = false;
@@ -874,6 +916,19 @@ function rollToken(rng, hits, order){
   return null;
 }
 
+/* A token's identity is what it shows: hidden layers are not in the picture or
+   the metadata, so two tokens that differ only in a hidden layer ARE duplicates. */
+function visibleKey(tok){
+  return cats.map(c => tok.suppressed.includes(c.id) ? "" : (tok.chosen[c.id] || "")).join("|") + (gate.on ? "|" + tok.cls : "");
+}
+const visibleTrait = (tok, cid) => tok.suppressed.includes(cid) ? null : (tok.chosen[cid] || null);
+function mergeHits(into, from){
+  into.rejects += from.rejects; into.dead += from.dead;
+  for(const k in from.rules) into.rules[k] = (into.rules[k] || 0) + from.rules[k];
+  for(const k in from.reasons) into.reasons[k] = (into.reasons[k] || 0) + from.reasons[k];
+}
+const DUP_TRIES = 250;
+
 function compose(tok){
   const c = blankCanvas(), ctx = c.getContext("2d");
   ctx.imageSmoothingEnabled = false;
@@ -898,17 +953,33 @@ function generate(fresh){
   const seed = $("seed").value;
   const rng = rngFrom(seed);
   const order = resolveOrder();
-  const hits = {rules:{}, rejects:0, dead:0, reasons:{}};
+  const hits = {rules:{}, rejects:0, dead:0, reasons:{}, dupRerolls:0, dupKept:0};
   const nOnes = Math.min(ones.length, supply);
-  const gen = [];
-  for(let i=0; i<supply - nOnes; i++){ const t = rollToken(rng, hits, order); if(t) gen.push(t) }
+  const gen = [], seen = new Set(), unique = collection.unique !== false;
+  for(let i=0; i<supply - nOnes; i++){
+    let t = null;
+    for(let tries = 0; tries < (unique ? DUP_TRIES : 1); tries++){
+      const th = {rules:{}, rejects:0, dead:0, reasons:{}};
+      const cand = rollToken(rng, th, order);
+      if(!cand){ mergeHits(hits, th); break }
+      if(unique && seen.has(visibleKey(cand)) && tries < DUP_TRIES - 1){ hits.dupRerolls++; continue }
+      t = cand; mergeHits(hits, th); break;
+    }
+    if(t){ const k = visibleKey(t); if(seen.has(k)) hits.dupKept++; seen.add(k); gen.push(t) }
+  }
   const oneToks = ones.slice(0, nOnes).map(o => ({oneOfOne:o, cls:null, chosen:{}, suppressed:[], fired:[], gaps:[]}));
   const tokens = gen.slice();
   if(collection.ones === "start") tokens.unshift(...oneToks);
   else if(collection.ones === "end") tokens.push(...oneToks);
   else { const prng = rngFrom(seed + "|1of1"); oneToks.forEach(t => tokens.splice(Math.floor(prng() * (tokens.length + 1)), 0, t)) }
   tokens.forEach((t,i) => { t.id = collection.start + i });
-  lastRun = {tokens, hits, supply, nGen:gen.length, nOnes, seed};
+  const freq = {};                                   // catId -> {value|"" : count}, over generated tokens
+  cats.forEach(c => freq[c.id] = {});
+  gen.forEach(t => cats.forEach(c => { const v = visibleTrait(t, c.id) || ""; freq[c.id][v] = (freq[c.id][v] || 0) + 1 }));
+  const nG = gen.length || 1;
+  gen.forEach(t => { t.score = cats.reduce((a,c) => a - Math.log2((freq[c.id][visibleTrait(t, c.id) || ""] || 1) / nG), 0) });
+  [...gen].sort((a,b) => b.score - a.score).forEach((t,i,arr) => { t.rank = (i > 0 && Math.abs(t.score - arr[i-1].score) < 1e-9) ? arr[i-1].rank : i + 1 });
+  lastRun = {tokens, hits, supply, nGen:gen.length, nOnes, seed, freq, probe:null};
   page = 0; inspTok = null; $("inspPanel").hidden = true;
   $("runScope").textContent = supply ? supply.toLocaleString() + " supply" : "idle";
   drawSheet(); drawStats(); drawRules(); drawCoverage(); updateExportBar();
@@ -997,6 +1068,33 @@ function gotoToken(id){
   if(cell){ cell.click(); cell.scrollIntoView({block:"nearest"}) }
 }
 
+/* The inspector shows the token far bigger than a thumbnail, so it is redrawn from
+   the original layer files at their full size rather than the 384 px working copy. */
+const inspCache = new Map();
+async function sharpenInspector(tok){
+  try{
+    const W = Math.min(CANVAS.w, 2048), H = Math.min(CANVAS.h, 2048);
+    const c = document.createElement("canvas"); c.width = W; c.height = H;
+    const ctx = c.getContext("2d"); ctx.imageSmoothingEnabled = false;
+    if(tok.oneOfOne){
+      const k = "1of1|" + tok.oneOfOne.name;
+      if(!inspCache.has(k)) inspCache.set(k, tok.oneOfOne.file ? await createImageBitmap(tok.oneOfOne.file) : tok.oneOfOne.canvas);
+      ctx.drawImage(inspCache.get(k), 0, 0, W, H);
+    } else {
+      for(const cat of cats){
+        const t = tok.chosen[cat.id];
+        if(!t || tok.suppressed.includes(cat.id)) continue;
+        const src = await sourceFor(cat.id, t, inspCache);
+        if(src) ctx.drawImage(src, 0, 0, W, H);
+      }
+    }
+    if(inspTok !== tok) return;                // another token was clicked meanwhile
+    const ic = $("inspCanvas");
+    ic.width = W; ic.height = H;
+    const ictx = ic.getContext("2d"); ictx.imageSmoothingEnabled = false;
+    ictx.drawImage(c, 0, 0);
+  }catch(e){ /* the working-copy drawing stays up */ }
+}
 function inspect(tok, cell){
   inspTok = tok; updateExportBar();
   document.querySelectorAll(".tok.sel").forEach(e => e.classList.remove("sel"));
@@ -1009,25 +1107,57 @@ function inspect(tok, cell){
   const ictx = ic.getContext("2d");
   ictx.clearRect(0,0,WORK.w,WORK.h);
   ictx.drawImage(compose(tok), 0, 0);
-  const ul = $("inspTraits"); ul.textContent = "";
+  ic.classList.add("px");                      // hard pixel edges at any size
+  sharpenInspector(tok);                       // then redraw from the original files
+  const ul = $("inspTraits"); ul.textContent = ""; ul.className = "traits cards";
+  const rk = $("inspRank"); rk.textContent = "";
   if(tok.oneOfOne){
+    rk.innerHTML = '<span class="rk">1 of 1</span><span class="rs">a finished one-off piece, outside the rarity ranking</span>';
     const li = document.createElement("li");
-    li.innerHTML = '<span class="k">1 of 1</span><span class="v"></span>';
-    li.querySelector(".v").textContent = tok.oneOfOne.name;
+    li.innerHTML = '<span class="tk">1 of 1</span><span class="tv"></span>';
+    li.querySelector(".tv").textContent = tok.oneOfOne.name;
     ul.appendChild(li);
     $("inspWhy").innerHTML = '<span style="color:var(--faint)">A finished one-off piece — no layers or rules apply to it.</span>';
     return;
   }
+  const nG = (lastRun && lastRun.nGen) || 1;
+  if(tok.rank){
+    rk.innerHTML = '<span class="rk">Rarity rank <b>#' + tok.rank.toLocaleString() + '</b> of ' + nG.toLocaleString() + '</span>' +
+      '<span class="rs">1 = rarest. Scored from how few tokens share each of its traits, the way OpenSea ranks.</span>';
+  }
+  const fmtP = p => (p < 1 ? p.toFixed(2) : p.toFixed(1)) + "%";
   for(const cat of cats){
     const t = tok.chosen[cat.id];
     const sup = tok.suppressed.includes(cat.id);
     const noart = t && !sup && !spriteFor(cat.id, t);
     const cl = !t ? "none" : sup ? "sup" : noart ? "noart" : "";
-    const label = !t ? "— none —" : sup ? t + "  (hidden)" : noart ? t + "  ⚠ no image" : t;
     const li = document.createElement("li");
-    li.innerHTML = '<span class="k"></span><span class="v ' + cl + '"></span>';
-    li.querySelector(".k").textContent = cat.name;
-    li.querySelector(".v").textContent = label;
+    li.innerHTML = '<span class="tk"></span><span class="tv ' + cl + '"></span><span class="tp"></span>';
+    li.querySelector(".tk").textContent = cat.name;
+    li.querySelector(".tv").textContent = !t ? "None" : noart ? t + "  ⚠ no image" : t;
+    const tp = li.querySelector(".tp");
+    if(sup){
+      tp.textContent = "hidden by a rule · not in the picture or metadata";
+    } else {
+      /* what you set: the tier, or the exact % */
+      const row = t ? (traits[cat.id] || []).find(x => x.name === t) : null;
+      const pinned = t ? !!(row && row.pin) : nonePin[cat.id] !== false;
+      const tierId = t ? tierOf(row && row.tier) : tierOf(noneTier[cat.id]);
+      const share = t ? (row ? row.w : 0) : (noneW[cat.id] || 0);
+      const chip = document.createElement("span");
+      const byRule = !t && share <= 0;
+      chip.className = "tierchip t-" + (byRule ? "common" : pinned ? "exact" : tierId);
+      chip.textContent = byRule ? "Emptied by a rule" : pinned ? "Exact " + (share ? fmtP(share) : "0%") : TIERS.find(x => x.id === tierId).name;
+      chip.title = byRule ? "None is set to 0% here, so a rule emptied this category on this token."
+                 : pinned ? "Share you typed for this" : "Tier you picked. Its share works out to " + fmtP(share) + " of this category.";
+      tp.appendChild(chip);
+      /* what the run produced, OpenSea style */
+      const have = lastRun && lastRun.freq && lastRun.freq[cat.id] ? (lastRun.freq[cat.id][t || ""] || 0) : 0;
+      const hv = document.createElement("span");
+      hv.innerHTML = "<b>" + fmtP(have / nG * 100) + "</b> have this";
+      hv.title = have.toLocaleString() + " of " + nG.toLocaleString() + " tokens";
+      tp.appendChild(hv);
+    }
     ul.appendChild(li);
   }
   const why = $("inspWhy"); why.textContent = "";
@@ -1052,52 +1182,159 @@ function drawStats(){
   }
   const {tokens, hits, supply} = lastRun;
   const genToks = tokens.filter(t => !t.oneOfOne);
-  const unique = new Set(genToks.map(t => cats.map(c => t.chosen[c.id] || "-").join("|"))).size;
+  const unique = new Set(genToks.map(visibleKey)).size;
   const dupes = genToks.length - unique;
   const rejectRate = Math.round(hits.rejects / (genToks.length + hits.rejects || 1) * 100);
-  const unreachable = coverage().filter(c => c.count === 0).length;
+  const missing = missingTraits();
+  const unreachable = missing.length;
   const noArt = tokens.filter(t => t.gaps && t.gaps.length).length;
   const cells = [
     ["good", tokens.length.toLocaleString(), "Tokens built"],
     [dupes ? "alert" : "good", dupes.toLocaleString(), "Duplicates"],
     [rejectRate > 45 ? "alert" : "", rejectRate + "%", "Rerolled by rules"],
-    [unreachable ? "alert" : "good", unreachable, "Unreachable traits"],
+    [missing.some(m => m.kind !== "rare") ? "alert" : unreachable ? "" : "good", unreachable, "Missing traits"],
     [hits.dead ? "alert" : "", hits.dead.toLocaleString(), "Dead ends"],
     [noArt ? "" : "good", noArt.toLocaleString(), "Missing art"]
   ];
   if(lastRun.nOnes) cells.push(["", lastRun.nOnes.toLocaleString(), "1-of-1s"]);
   $("stats").innerHTML = cells.map(c => '<div class="stat '+c[0]+'"><b>'+c[1]+'</b><span>'+c[2]+'</span></div>').join("");
   const notes = [];
-  if(dupes) notes.push("<b>" + dupes.toLocaleString() + " duplicate" + (dupes>1?"s":"") + "</b> — identical trait sets on different tokens. Either the pool isn't deep enough for " + supply.toLocaleString() + ", or a few big shares are crowding everything else out.");
+  if(dupes) notes.push("<b>" + dupes.toLocaleString() + " duplicate" + (dupes>1?"s":"") + "</b>: tokens that look identical. " +
+    (collection.unique !== false
+      ? "No duplicates is on, but these could not be avoided in " + DUP_TRIES + " rerolls each, so the pool is close to exhausted for " + supply.toLocaleString() + "."
+      : "Tick <b>No duplicates</b> next to Generate and they are rerolled away. Even a huge pool throws the odd one: weighted traits concentrate on the common combinations, like two people sharing a birthday."));
+  else if(hits.dupRerolls) notes.push("No duplicates: " + hits.dupRerolls.toLocaleString() + " token" + (hits.dupRerolls>1?"s were":" was") + " rerolled because " + (hits.dupRerolls>1?"they":"it") + " matched one already built. Every token is unique.");
   if(rejectRate > 45) notes.push("Rules are rejecting " + rejectRate + "% of rolls. It still works, but lowering the share of the traits that keep getting blocked beats rerolling around them.");
-  if(unreachable) notes.push("<b>" + unreachable + " trait" + (unreachable>1?"s":"") + " never appeared</b> across the whole supply — either a rule blocks it, or its share is 0%.");
+  if(unreachable){
+    const nRare = missing.filter(m => m.kind === "rare").length, nReal = unreachable - nRare;
+    notes.push("<b>" + unreachable + " trait" + (unreachable>1?"s":"") + " missing from this run.</b> " +
+      (nReal ? nReal + " can't appear as things stand" + (nRare ? ", " + nRare + " are just rare. " : ". ") : "All of them are just rare and didn't come up this time. ") +
+      "Each one is listed below with the reason.");
+  }
   if(hits.dead) notes.push(hits.dead.toLocaleString() + " token" + (hits.dead>1?"s":"") + " couldn't be built within 60 attempts. Something in the rules is contradictory.");
   if(noArt) notes.push(noArt.toLocaleString() + " token" + (noArt>1?"s":"") + " use a trait with no image loaded — flagged amber on the sheet.");
   if(!notes.length) notes.push("Clean run. Every category has somewhere to go on every roll, every trait is reachable, and no two tokens share a trait set.");
   $("runNote").innerHTML = notes.map(t => '<p class="note">'+t+'</p>').join("");
+  if(missing.length){
+    const KIND = {rare:["rare","Rare"], zero:["zero","0% share"], blocked:["blocked","Blocked"], hidden:["hidden","Always hidden"]};
+    const box = document.createElement("div"); box.className = "misslist";
+    const order = {blocked:0, hidden:1, zero:2, rare:3};
+    missing.sort((a,b) => order[a.kind] - order[b.kind] || a.cat.localeCompare(b.cat)).forEach(m => {
+      const row = document.createElement("div"); row.className = "missrow " + KIND[m.kind][0];
+      const head = document.createElement("div"); head.className = "mh";
+      const tag = document.createElement("span"); tag.className = "mtag"; tag.textContent = KIND[m.kind][1];
+      const nm = document.createElement("span"); nm.className = "mn"; nm.textContent = m.cat + " · " + m.trait;
+      head.append(tag, nm);
+      if(m.tier){ const tc = document.createElement("span"); tc.className = "tierchip t-" + m.tier; tc.textContent = TIERS.find(x => x.id === m.tier).name; head.appendChild(tc) }
+      const why = document.createElement("div"); why.className = "mw"; why.textContent = m.why + " " + m.fix;
+      row.append(head, why);
+      if(m.kind !== "rare" && m.rulesHit.length){
+        const rl = document.createElement("div"); rl.className = "mr";
+        m.rulesHit.forEach(r => { const d = document.createElement("div"); d.textContent = "▸ " + ruleSentence(r, true); rl.appendChild(d) });
+        row.appendChild(rl);
+      }
+      box.appendChild(row);
+    });
+    $("runNote").appendChild(box);
+  }
 }
 function coverage(){
-  const counts = {}, rows = [];
-  cats.forEach(c => (traits[c.id]||[]).forEach(t => counts[c.id+"|"+t.name] = 0));
-  if(lastRun) for(const tok of lastRun.tokens) for(const c of cats){ const t = tok.chosen[c.id]; if(t && counts[c.id+"|"+t] != null) counts[c.id+"|"+t]++ }
-  cats.forEach(c => (traits[c.id]||[]).forEach(t => rows.push({cat:c.name, trait:t.name, cls:t.cls||"", count:counts[c.id+"|"+t.name], pct:t.w})));
+  const rows = [];
+  cats.forEach(c => (traits[c.id]||[]).forEach(t => rows.push({
+    cid:c.id, cat:c.name, trait:t.name, cls:t.cls||"", pct:t.w,
+    count: lastRun && lastRun.freq && lastRun.freq[c.id] ? (lastRun.freq[c.id][t.name] || 0) : 0 })));
   return rows;
 }
+/* ========================= why a trait is missing =========================
+   A trait with no tokens is one of three things, and they need different fixes:
+   its share is 0, the rules make it impossible, or it is simply rare and did not
+   come up this time. A quick side run of extra rolls (it does not touch the real
+   collection) tells the last two apart and measures each trait's real odds. */
+const PROBE_ROLLS = 20000;
+function probe(){
+  if(!lastRun) return null;
+  if(lastRun.probe) return lastRun.probe;
+  const rng = rngFrom(lastRun.seed + "|probe"), order = resolveOrder();
+  const chosen = {}, shown = {};
+  let n = 0;
+  for(let i=0; i<PROBE_ROLLS; i++){
+    const t = rollToken(rng, {rules:{}, rejects:0, dead:0, reasons:{}}, order);
+    if(!t) continue; n++;
+    for(const c of cats){
+      const v = t.chosen[c.id]; if(!v) continue;
+      const k = c.id + "|" + v;
+      chosen[k] = (chosen[k] || 0) + 1;
+      if(!t.suppressed.includes(c.id)) shown[k] = (shown[k] || 0) + 1;
+    }
+  }
+  return lastRun.probe = {n, chosen, shown};
+}
+function rulesTouching(cid, name, kind){
+  const live = rules.filter(r => !r.dead);
+  if(kind === "hidden") return live.filter(r => r.type === "suppress" && r.then.layer === cid);
+  const own = live.filter(r => r.when.layer === cid && r.when.trait === name);
+  const aimed = live.filter(r => r.then.layer === cid && r.then.trait === name && r.type === "exclude");
+  const wide = live.filter(r => r.then.layer === cid && (r.type === "excludeCategory" ||
+    (r.type === "only" && !(r.then.traits || []).includes(name)) || (r.type === "require" && r.then.trait !== name)));
+  return [...new Set(own.concat(aimed, wide))];
+}
+function missingTraits(){
+  if(!lastRun || !lastRun.nGen) return [];
+  const miss = coverage().filter(r => r.count === 0);
+  if(!miss.length) return [];
+  const pr = probe(), nGen = lastRun.nGen;
+  return miss.map(r => {
+    const k = r.cid + "|" + r.trait;
+    const shownP = pr && pr.n ? (pr.shown[k] || 0) / pr.n : 0;
+    const chosenP = pr && pr.n ? (pr.chosen[k] || 0) / pr.n : 0;
+    const t = (traits[r.cid] || []).find(x => x.name === r.trait) || {};
+    let kind, why, fix;
+    if(!(r.pct > 0)){
+      kind = "zero"; why = "Its share is 0%.";
+      fix = "Give it a tier or a %, or remove it if it is not meant to be in the collection.";
+    } else if(shownP > 0){
+      const exp = shownP * nGen, expTxt = exp < 10 ? exp.toFixed(1) : String(Math.round(exp));
+      const hiddenFrac = chosenP > 0 ? 1 - shownP / chosenP : 0;
+      kind = "rare";
+      why = "Rare, and it just didn't come up. At " + (shownP*100).toFixed(shownP < 0.001 ? 3 : 2) + "% per token you'd expect about " +
+            expTxt + " in " + nGen.toLocaleString() + ", so a run with none happens about " + Math.round(Math.exp(-exp)*100) + "% of the time.";
+      if(hiddenFrac > 0.5){
+        const hiders = rules.filter(x => !x.dead && x.type === "suppress" && x.then.layer === r.cid).map(x => x.when.trait);
+        why += " It's mostly hidden: it gets picked often, but " + Math.round(hiddenFrac*100) + "% of the time a Hide rule covers " + r.cat +
+               (hiders.length ? " (" + hiders.slice(0,3).join(", ") + (hiders.length > 3 ? " and " + (hiders.length-3) + " more" : "") + ")" : "") + ".";
+        fix = "To show it more, lower the share of the " + (hiders.length ? catName(rules.find(x => x.type === "suppress" && x.then.layer === r.cid).when.layer) : "") +
+              " traits that hide it, or raise None there.";
+      } else fix = parseFloat(expTxt) < 1 ? "Under 1 expected at this supply. Raise its tier a step, or keep it as a true grail."
+                                           : "Press Generate again, or raise its tier a step.";
+    } else if(chosenP > 0){
+      kind = "hidden"; why = "It gets picked, but a Hide rule hides its category every time it does.";
+      fix = "Check the Hide rules below.";
+    } else {
+      kind = "blocked"; why = "Never came up in " + (pr ? pr.n : 0).toLocaleString() + " test rolls, so the rules make it impossible.";
+      fix = "Check the rules below.";
+    }
+    return Object.assign({}, r, {kind, why, fix, tier: t.pin ? null : tierOf(t.tier), rulesHit: rulesTouching(r.cid, r.trait, kind).slice(0, 4)});
+  });
+}
+const fmtPct = p => (!p ? "0" : p < 0.1 ? p.toFixed(3) : p < 1 ? p.toFixed(2) : p.toFixed(1)) + "%";
 function drawCoverage(){
   if(!lastRun || !lastRun.supply){ $("covTable").innerHTML = ""; $("covCount").textContent = ""; $("covNote").textContent = "Fills in after a run."; return }
   const rows = coverage().sort((a,b) => a.count - b.count || a.cat.localeCompare(b.cat));
   const total = lastRun.nGen || 1;
   const missing = rows.filter(r => r.count === 0).length;
+  const kindOf = {}; missingTraits().forEach(m => kindOf[m.cid + "|" + m.trait] = m.kind);
   $("covCount").textContent = rows.length + " traits";
   $("covNote").textContent = missing
-    ? "Sorted rarest first. Zero-count traits are the ones to look at — a rule is blocking them, or their share is 0%."
+    ? "Sorted rarest first. Counts are what shows in the picture and metadata, so a hidden layer does not count. Missing traits are explained in the run report above."
     : "Sorted rarest first across the whole run. Target is what you set; actual is what the run produced.";
   const head = '<tr><th>Category</th><th>Trait</th>' + (gate.on ? '<th>Class</th>' : '') + '<th>Target</th><th>Actual</th><th>Count</th><th></th></tr>';
   $("covTable").innerHTML = head + rows.map(r => {
     const actual = r.count / total * 100;
-    const pill = r.count === 0 ? '<span class="pill bad">none</span>' : actual < 0.5 ? '<span class="pill warn">thin</span>' : '<span class="pill ok">ok</span>';
+    const k = kindOf[r.cid + "|" + r.trait];
+    const pill = r.count === 0 ? (k === "rare" ? '<span class="pill warn">rare · none this run</span>' : k === "zero" ? '<span class="pill bad">0% share</span>' : k === "hidden" ? '<span class="pill bad">always hidden</span>' : '<span class="pill bad">blocked</span>')
+               : actual < 0.5 ? '<span class="pill warn">thin</span>' : '<span class="pill ok">ok</span>';
     return '<tr><td style="color:var(--faint)">'+r.cat+'</td><td>'+r.trait+'</td>' + (gate.on ? '<td style="color:var(--purple)">'+(r.cls||"—")+'</td>' : '') +
-      '<td>'+r.pct.toFixed(1)+'%</td><td>'+actual.toFixed(1)+'%</td><td>'+r.count.toLocaleString()+'</td><td>'+pill+'</td></tr>';
+      '<td>'+fmtPct(r.pct)+'</td><td>'+fmtPct(actual)+'</td><td>'+r.count.toLocaleString()+'</td><td>'+pill+'</td></tr>';
   }).join("");
 }
 
@@ -1352,9 +1589,12 @@ function drawRules(){
       '</ul></div>';
     return;
   }
-  if(ruleFix.fixed.length || ruleFix.dead.length){
+  if(ruleFix.fixed.length || ruleFix.dead.length || catFix.moved.length || catFix.kept.length){
     const b = document.createElement("div"); b.className = "rulefix" + (ruleFix.dead.length ? " bad" : "");
     let t = "";
+    if(catFix.moved.length) t += "Matched your loaded folders to the ruleset's categories: " + catFix.moved.join(", ") + ". ";
+    if(catFix.kept.length) t += "Kept " + catFix.kept.join(", ") + ", which the ruleset doesn't list, at the top of the stack. Move " +
+      (catFix.kept.length === 1 ? "it" : "them") + " into place in step 02. ";
     if(ruleFix.fixed.length) t += "Matched " + ruleFix.fixed.length + " rule " +
       (ruleFix.fixed.length === 1 ? "category" : "categories") + " to your current stack: " + ruleFix.fixed.join(", ") + ". ";
     if(ruleFix.dead.length) t += "These rules name a category that does not exist here: " + ruleFix.dead.join(", ") +
@@ -1428,7 +1668,19 @@ function drawGateUI(){
 
 /* ========================= image intake ========================= */
 const ONE_ALIASES = new Set(["1of1","1of1s","1of1art","oneofone","oneofones","oneofakind","legendary","legendaries","unique","uniques"]);
-function folderToCat(name){
+/* Folder and category names drift: headwear / Headware, Clothing / Clothes, Eyes / Eyes-Eyewear.
+   Same name, one a prefix of the other, a spelling slip, or a long shared start. */
+function namesMatch(a, b){
+  const x = normalize(a).replace(/^\d+/, ""), y = normalize(b).replace(/^\d+/, "");
+  if(!x || !y) return false;
+  if(x === y) return true;
+  const lo = Math.min(x.length, y.length);
+  if(lo >= 3 && (x.startsWith(y) || y.startsWith(x))) return true;
+  if(lo >= 5 && lev(x, y) <= 2) return true;
+  let k = 0; while(k < lo && x[k] === y[k]) k++;
+  return k >= 5 && k >= 0.7 * lo;
+}
+function folderToCat(name, fuzzy){
   if(ONE_ALIASES.has(normalize(name))) return "oneofone";
   const n = normalize(name).replace(/^\d+/, "");
   if(!n) return null;
@@ -1440,13 +1692,16 @@ function folderToCat(name){
     if(n.startsWith(cn) && cn.length >= 3 && cn.length > bestLen){ best = c.id; bestLen = cn.length }
     if(cn.startsWith(n) && n.length >= 3 && n.length > bestLen){ best = c.id; bestLen = n.length }
   }
-  return best;
+  if(best || !fuzzy) return best;
+  const near = cats.find(c => namesMatch(c.name, name) || namesMatch(c.id, name));
+  return near ? near.id : null;
 }
 function parseName(rel){
   const parts = rel.split(/[\\/]/).filter(Boolean);
   const base = parts[parts.length-1].replace(IMG_RE, "").replace(/^\d{1,3}[._-]+/, "").trim();
   let folderHit = null, lastFolder = null;
-  for(const p of parts.slice(0,-1)){ lastFolder = p; const a = folderToCat(p); if(a) folderHit = a }
+  const dirs = parts.slice(0,-1);
+  dirs.forEach((p, i) => { lastFolder = p; const a = folderToCat(p, i === dirs.length - 1); if(a) folderHit = a });
   let toks = base.split(/[_\-]+/).map(t => t.trim()).filter(Boolean);
   let layer = folderHit, newCatName = null;
   if(!layer){
@@ -1474,8 +1729,16 @@ async function ingest(input){
   st.textContent = "Loading " + imgs.length + " files…";
   const pruneExamples = examplesUntouched;
 
+  /* A file picked from a folder is only a link to the file on disk. If that file is
+     renamed, moved, replaced or re-synced later, the browser refuses to read it and
+     Save project / Export fail. So each image is copied into memory right now and
+     the tool never goes back to the disk. */
   const decoded = [];
   for(const it of imgs){
+    try{
+      const bytes = await it.file.arrayBuffer();
+      it.file = new File([bytes], it.file.name, {type: it.file.type || mimeOf(it.file.name), lastModified: it.file.lastModified});
+    }catch(e){ /* unreadable right now: it is reported below as an image that couldn't be opened */ }
     const url = URL.createObjectURL(it.file);
     const img = await new Promise(res => { const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = url });
     decoded.push({it, img, url});
@@ -1490,7 +1753,7 @@ async function ingest(input){
     WORK = {w:Math.max(1, Math.round(w*k)), h:Math.max(1, Math.round(h*k))};
   }
 
-  const byCat = {}, report = [], newOnes = [], created = [];
+  const byCat = {}, report = [], newOnes = [], created = [], renamedEx = new Set();
   const built = {};
   for(const d of decoded){
     const p = d.it.parsed ? Object.assign({rel:d.it.rel, folder:null}, d.it.parsed) : parseName(d.it.rel);
@@ -1498,6 +1761,11 @@ async function ingest(input){
       const made = addCat(p.newCatName);
       created.push(made.name);
       p.layer = made.id;
+    } else if(pruneExamples && p.layer && p.layer !== "oneofone" && p.folder && !renamedEx.has(p.layer)){
+      /* the examples are placeholders: when your folder fills one, it takes your folder's name */
+      const c = catById(p.layer), fname = titleize(p.folder.replace(/^\d{1,3}[._\- ]+/, ""));
+      renamedEx.add(p.layer);
+      if(c && fname && normalize(c.name) !== normalize(fname) && folderToCat(p.folder, true) === p.layer) c.name = fname;
     }
     const issues = [];
     if(!d.img){
@@ -1577,6 +1845,7 @@ async function ingest(input){
     (dropped.length ? " Cleared the unused example categor" + (dropped.length === 1 ? "y" : "ies") + ": " + dropped.join(", ") + "." : "") +
     (skipped ? " Left out " + skipped + " removed trait" + (skipped === 1 ? "" : "s") + "." : "");
   persist();
+  inspCache.forEach(v => { if(v && v.close) v.close() }); inspCache.clear();
   drawValidation(); drawCats(); drawRarity(); drawRules(); drawGateUI(); refreshBuilder(); syncCfgBox(); generate();
   saveArt();
   return {files:imgs.length, created};
@@ -1882,8 +2151,47 @@ async function saveBlob(blob, name){
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a"); a.href = url; a.download = name;
   document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 10000);
+  /* A download started by the page itself (rather than your own click) can be dropped
+     without a word by the browser. Keep the file ready behind a real link for a while. */
+  if(lastDl && lastDl.url !== url) URL.revokeObjectURL(lastDl.url);
+  lastDl = {url, name, size:blob.size};
+  setTimeout(() => { if(lastDl && lastDl.url === url){ URL.revokeObjectURL(url); lastDl = null; drawDlLink() } }, 10 * 60 * 1000);
+  drawDlLink();
   return "saved";
+}
+let lastDl = null;
+/* "Didn't download? Save it here" — a plain link you click yourself, which browsers always honour */
+function drawDlLink(){
+  const box = $("dlLink"); if(!box) return;
+  box.textContent = "";
+  if(!lastDl){ box.hidden = true; return }
+  box.hidden = false;
+  box.append("Didn't download? ");
+  const a = document.createElement("a");
+  a.href = lastDl.url; a.download = lastDl.name; a.textContent = "Click here to save " + lastDl.name;
+  a.title = "Right-click and choose Save link as… to pick the folder";
+  box.appendChild(a);
+  box.append(" (" + fmtSize(lastDl.size) + "). Right-click → Save link as… to choose the folder.");
+  const x = document.createElement("button"); x.type = "button"; x.className = "iconbtn"; x.textContent = "×"; x.title = "Dismiss";
+  x.addEventListener("click", () => { box.hidden = true });
+  box.appendChild(x);
+}
+/* A real "Save as" window where the browser has one (Chrome, Edge). It has to be
+   opened straight from the click, before any packing, because browsers only allow
+   it during the click itself. A plain download fired seconds after the click can
+   be blocked without a word, which is what made Save project look dead. */
+async function pickSaveHandle(name, desc, mime, ext){
+  if(dl || typeof window.showSaveFilePicker !== "function") return null;
+  try{ return await window.showSaveFilePicker({suggestedName:name, types:[{description:desc, accept:{[mime]:[ext]}}]}) }
+  catch(err){ return (err && err.name === "AbortError") ? "cancelled" : null }   // any other refusal: fall back to a download
+}
+async function writeHandle(h, blob){ const w = await h.createWritable(); await w.write(blob); await w.close() }
+let projTimer = null;
+function projMsg(text, kind){
+  const el = $("projStatus"); if(!el) return;
+  el.textContent = text; el.className = "navstatus" + (kind ? " " + kind : "");
+  clearTimeout(projTimer);
+  if(kind !== "busy") projTimer = setTimeout(() => { el.textContent = ""; el.className = "navstatus" }, 12000);
 }
 const SAVE_MSG = {declined:"Save cancelled.", busy:"A save prompt is already open — finish that one first.", too_large:"That file is too big to save from here. Try a smaller resolution."};
 const DL_ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square" aria-hidden="true"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M2.5 13.5h11"/></svg>';
@@ -2003,7 +2311,10 @@ async function exportTokens(list, label){
       ? list.length.toLocaleString() + " images" + (withMeta ? " + metadata" : "") + " · " + fmtSize(zip.size) + " · zip saved."
       : SAVE_MSG[res];
   }catch(err){
-    status.textContent = "Export stopped: " + ((err && err.message) || err) + ". Try a smaller resolution or fewer tokens.";
+    const m = String((err && err.message) || err);
+    status.textContent = /could not be (found|decoded)|NotFound|NotReadable/i.test(m + " " + (err && err.name))
+      ? "Export stopped: a layer file changed or moved on your computer after you loaded it. Click Load folder again, then export."
+      : "Export stopped: " + m + ". Try a smaller resolution or fewer tokens.";
   }finally{
     closeAll(cache); exporting = null;
     $("btnCancelExport").hidden = true; $("btnSavePng").disabled = false;
@@ -2033,9 +2344,34 @@ function snapshot(){
   if(TIERS.some(t => +tierW[t.id] !== TIER_DEFAULT[t.id])) out.tiers = Object.assign({}, tierW);
   return out;
 }
+let catFix = {moved:[], kept:[]};
+function moveCategory(from, to){
+  if(from === to) return;
+  const mv = obj => { if(obj[from] !== undefined){ obj[to] = obj[from]; delete obj[from] } };
+  [traits, art, noneW, nonePin, noneTier, removed, shelf].forEach(mv);
+  rules.forEach(r => { if(r.when && r.when.layer === from) r.when.layer = to; if(r.then && r.then.layer === from) r.then.layer = to });
+  if(gate.cat === from) gate.cat = to;
+  if(selCat === from) selCat = to;
+}
 function applyCfg(o){
   if(!o) return;
   if(Array.isArray(o.categories) && o.categories.length){
+    catFix = {moved:[], kept:[]};
+    const incoming = o.categories.map(c => ({id:c.id, name:c.name}));
+    const inIds = new Set(incoming.map(c => c.id));
+    const holds = id => (traits[id] || []).length || (removed[id] || []).length;
+    const orphans = cats.filter(c => !inIds.has(c.id) && holds(c.id));
+    const claimed = new Set();
+    incoming.forEach(ic => {
+      if(holds(ic.id)) return;                                   // art already sits under this exact id
+      const hit = orphans.find(oc => !claimed.has(oc.id) &&
+        (namesMatch(oc.name, ic.name) || namesMatch(oc.id, ic.id) || namesMatch(oc.name, ic.id)));
+      if(hit){ claimed.add(hit.id); moveCategory(hit.id, ic.id); if(normalize(hit.name) !== normalize(ic.name)) catFix.moved.push(hit.name + " → " + ic.name) }
+    });
+    /* never drop loaded art: categories the ruleset does not know stay, on top of the stack */
+    const extra = orphans.filter(oc => !claimed.has(oc.id)).map(oc => ({id:oc.id, name:oc.name}));
+    extra.forEach(c => catFix.kept.push(c.name));
+    o = Object.assign({}, o, {categories: incoming.concat(extra)});
     const keep = {}, keepArt = {};
     o.categories.forEach(c => { if(traits[c.id]) keep[c.id] = traits[c.id]; if(art[c.id]) keepArt[c.id] = art[c.id] });
     cats = o.categories.map(c => ({id:c.id, name:c.name}));
@@ -2144,8 +2480,14 @@ function persist(){
 
 async function saveRuleset(){
   const d = new Date(), stamp = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+  const fname = slug(collection.name) + "-ruleset-" + stamp + ".json";
+  const handle = await pickSaveHandle(fname, "Trait Forge ruleset", "application/json", ".json");
+  if(handle === "cancelled"){ $("rulesStatus").textContent = "Save cancelled."; return }
   const body = Object.assign({format:"trait-forge-ruleset", version:2, saved:new Date().toISOString()}, snapshot());
-  const res = await saveBlob(new Blob([JSON.stringify(body, null, 2)], {type:"application/json"}), slug(collection.name) + "-ruleset-" + stamp + ".json");
+  const blob = new Blob([JSON.stringify(body, null, 2)], {type:"application/json"});
+  let res;
+  try{ if(handle){ await writeHandle(handle, blob); res = "saved" } else res = await saveBlob(blob, fname) }
+  catch(err){ $("rulesStatus").textContent = "Couldn't save the ruleset: " + ((err && err.message) || err); return }
   $("rulesStatus").textContent = res === "saved"
     ? "Ruleset saved — " + rules.length + " rule" + (rules.length === 1 ? "" : "s") + ", the category list and every rarity share. Send it; the other person clicks Load ruleset."
     : SAVE_MSG[res];
@@ -2162,6 +2504,7 @@ function loadRuleset(file){
     const broken = rules.filter(ruleBroken).length;
     $("rulesStatus").textContent = "Loaded " + file.name + " · " + rules.length + " rule" + (rules.length === 1 ? "" : "s") +
       (ruleFix.fixed.length ? " · " + ruleFix.fixed.length + " matched to your categories" : "") +
+      (catFix.moved.length ? " · folders matched: " + catFix.moved.join(", ") : "") +
       (broken ? " · " + broken + " not matching anything yet, see the list" : "") + ".";
   };
   r.readAsText(file);
@@ -2172,11 +2515,14 @@ const extOf = n => ((n || "").match(IMG_RE) || [".png"])[0].toLowerCase();
 const mimeOf = n => ({".png":"image/png",".webp":"image/webp",".gif":"image/gif",".jpg":"image/jpeg",".jpeg":"image/jpeg"})[extOf(n)] || "image/png";
 
 async function saveProject(){
-  if(!artLoaded()) return;
+  if(!artLoaded()){ projMsg("Load your layers first. There is nothing to save yet.", "bad"); return }
   const btn = $("btnSaveProject"), st = $("rulesStatus");
-  btn.disabled = true; st.textContent = "Packing the project…";
+  const fname = slug(collection.name) + "-project.zip";
+  const handle = await pickSaveHandle(fname, "Trait Forge project", "application/zip", ".zip");
+  if(handle === "cancelled"){ projMsg("Save cancelled."); return }
+  btn.disabled = true; st.textContent = "Packing the project…"; projMsg("Packing the project…", "busy");
   try{
-    const enc = new TextEncoder(), files = [], layers = {}, oneList = [];
+    const enc = new TextEncoder(), files = [], layers = {}, oneList = [], unreadable = [];
     const place = (folder, name, file, used) => {
       let fname = safeName(name) + extOf(file.name), k = 2;
       while(used.has(fname.toLowerCase())) fname = safeName(name) + " (" + (k++) + ")" + extOf(file.name);
@@ -2188,39 +2534,59 @@ async function saveProject(){
       const used = new Set(); layers[c.id] = [];
       for(const t of (traits[c.id]||[]).concat(Object.values(shelf[c.id] || {}))){
         const e = a[t.name]; if(!e || !e.file) continue;
+        let data;
+        try{ data = new Uint8Array(await e.file.arrayBuffer()) }
+        catch(err){ unreadable.push(c.name + " / " + t.name); continue }
         const path = place(c.name, t.name, e.file, used);
-        files.push({name:path, data:new Uint8Array(await e.file.arrayBuffer())});
+        files.push({name:path, data});
         layers[c.id].push({trait:t.name, pct:Math.round(t.w*100)/100, cls:t.cls || null, file:path});
       }
     }
     const usedOnes = new Set();
     for(const o of ones){
       if(!o.file) continue;
+      let data;
+      try{ data = new Uint8Array(await o.file.arrayBuffer()) }
+      catch(err){ unreadable.push("1 of 1s / " + o.name); continue }
       const path = place("1 of 1s", o.name, o.file, usedOnes);
-      files.push({name:path, data:new Uint8Array(await o.file.arrayBuffer())});
+      files.push({name:path, data});
       oneList.push({name:o.name, file:path});
+    }
+    if(unreadable.length){
+      const msg = "Couldn't save: " + unreadable.length + " layer file" + (unreadable.length === 1 ? "" : "s") +
+        " changed or moved on your computer after you loaded " + (unreadable.length === 1 ? "it" : "them") + " (" +
+        unreadable.slice(0, 4).join(", ") + (unreadable.length > 4 ? " and " + (unreadable.length - 4) + " more" : "") +
+        "). Click Load folder again, then Save project. Your rules and rarity stay as they are.";
+      st.textContent = msg; projMsg(msg, "bad"); return;
     }
     const project = {format:"trait-forge-project", version:2, saved:new Date().toISOString(),
       collection, supply:parseInt($("supply").value,10) || 0, seed:$("seed").value,
       ruleset:snapshot(), layers, oneOfOnes:oneList};
     files.unshift({name:"project.json", data:enc.encode(JSON.stringify(project, null, 2))});
     const zip = makeZip(files);
-    const res = await saveBlob(zip, slug(collection.name) + "-project.zip");
-    st.textContent = res === "saved"
-      ? "Project saved — " + (files.length - 1) + " images plus every rule and setting, " + fmtSize(zip.size) + "."
+    let res;
+    if(handle){ await writeHandle(handle, zip); res = "saved" }
+    else res = await saveBlob(zip, fname);
+    const msg = res === "saved"
+      ? "Project saved: " + (files.length - 1) + " images plus every rule and setting, " + fmtSize(zip.size) + "." +
+        (handle ? "" : " If it isn't in your Downloads, use the green link below the tabs.")
       : SAVE_MSG[res];
-  }catch(err){ st.textContent = "Couldn't save the project: " + ((err && err.message) || err) }
+    st.textContent = msg; projMsg(msg, res === "saved" ? "ok" : "bad");
+  }catch(err){
+    const msg = "Couldn't save the project: " + ((err && err.message) || err);
+    st.textContent = msg; projMsg(msg, "bad");
+  }
   finally{ btn.disabled = !artLoaded() }
 }
 
 async function openProject(file){
   if(!file) return;
   const st = $("rulesStatus");
-  st.textContent = "Opening " + file.name + "…";
+  st.textContent = "Opening " + file.name + "…"; projMsg("Opening " + file.name + "…", "busy");
   try{
     const entries = await readZip(file);
     const pj = entries.get("project.json");
-    if(!pj){ st.textContent = "That zip isn't a Trait Forge project (no project.json inside). For plain layer folders use Load folder."; return }
+    if(!pj){ st.textContent = "That zip isn't a Trait Forge project (no project.json inside). For plain layer folders use Load folder."; projMsg(st.textContent, "bad"); return }
     const project = JSON.parse(new TextDecoder().decode(await unzipEntry(pj)));
     art = {}; ones = []; validation = []; artLoadedFlag = false;
     CANVAS = {w:16, h:16}; WORK = {w:16, h:16};
@@ -2258,13 +2624,15 @@ async function openProject(file){
     st.textContent = "Opened " + file.name + " — " + items.length + " image" + (items.length === 1 ? "" : "s") + ", " +
       cats.length + " categories, " + rules.length + " rule" + (rules.length === 1 ? "" : "s") +
       (missing.length ? ". " + missing.length + " listed image" + (missing.length === 1 ? " was" : "s were") + " missing from the zip." : ".");
-  }catch(err){ st.textContent = "Couldn't open that project: " + ((err && err.message) || err) + "." }
+    projMsg(st.textContent, missing.length ? "bad" : "ok");
+  }catch(err){ st.textContent = "Couldn't open that project: " + ((err && err.message) || err) + "."; projMsg(st.textContent, "bad") }
 }
 
 /* ========================= collection inputs ========================= */
 function syncCollectionInputs(){
   $("colName").value = collection.name; $("colDesc").value = collection.desc; $("colBase").value = collection.base;
   $("colStart").value = String(collection.start); $("colOnes").value = collection.ones;
+  $("uniqueOnly").checked = collection.unique !== false;
   $("colExample").textContent = imageLink(collection.start);
 }
 
@@ -2338,6 +2706,7 @@ $("btnApply").addEventListener("click", () => {
     const broken = rules.filter(ruleBroken).length;
     $("rulesStatus").textContent = "Applied · " + rules.length + " rule" + (rules.length === 1 ? "" : "s") +
       (ruleFix.fixed.length ? " · " + ruleFix.fixed.length + " matched to your categories" : "") +
+      (catFix.moved.length ? " · folders matched: " + catFix.moved.join(", ") : "") +
       (broken ? " · " + broken + " not matching anything yet, see the list" : "") + ".";
   }
   catch(e){ $("rulesStatus").textContent = "That isn't valid JSON — nothing changed." }
@@ -2345,6 +2714,7 @@ $("btnApply").addEventListener("click", () => {
 $("btnResetRules").addEventListener("click", () => { rules = []; persist(); syncCfgBox(); generate() });
 
 $("btnGen").addEventListener("click", () => generate(true));
+$("uniqueOnly").addEventListener("change", () => { collection.unique = $("uniqueOnly").checked; persist(); generate(false) });
 $("seed").addEventListener("change", () => generate(false));
 $("zoom").addEventListener("input", () => { if(lastRun) drawSheet() });
 $("bdrop").addEventListener("change", () => { if(lastRun) drawSheet() });
